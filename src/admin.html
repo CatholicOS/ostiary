@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Coordinator tools: Ostiary</title>
+<meta name="theme-color" content="#7a2231">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="/assets/css/app.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="/">Ost<span>i</span>ary <small>Ministers of hospitality</small></a>
+    <nav class="main" aria-label="Main">
+      <a href="/roster">Roster</a>
+      <a href="/formation">Formation</a>
+      <a href="/meetings">Meetings</a>
+      <a href="/about">About</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<noscript>
+  <p class="banner"><strong>This page needs JavaScript.</strong>
+     Ostiary is a signed-in tool for a parish usher team, so its screens are built
+     in the browser. If you cannot enable scripts, ask your coordinator for a
+     printed roster: there is a "Print this roster" button on the roster page.</p>
+</noscript>
+  <div id="live" class="sr-only" aria-live="polite"></div>
+  <p id="error" class="banner" role="alert" hidden></p>
+
+  <h1>Coordinator tools</h1>
+  <p class="muted" id="identity"></p>
+
+  <p id="denied" class="banner" hidden>
+    <strong>Coordinator passphrase required.</strong>
+    Signing in with your name is not enough for this screen.
+    <a href="/">Sign in as coordinator</a>.
+  </p>
+
+  <div id="tools" hidden>
+
+    <h2>The team</h2>
+    <div class="card">
+      <form id="usherForm" class="grid two">
+        <div>
+          <div class="field">
+            <label for="uName">Name</label>
+            <input id="uName" type="text" required>
+          </div>
+          <div class="field">
+            <label for="uEmail">Email <span class="hint">optional</span></label>
+            <input id="uEmail" type="email">
+          </div>
+          <div class="field">
+            <label for="uPhone">Phone <span class="hint">optional</span></label>
+            <input id="uPhone" type="tel">
+          </div>
+        </div>
+        <div>
+          <div class="field">
+            <label for="uRole">Role</label>
+            <select id="uRole">
+              <option value="usher">Usher</option>
+              <option value="captain">Captain</option>
+              <option value="coordinator">Coordinator</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="uLangs">Languages</label>
+            <input id="uLangs" type="text" value="en" aria-describedby="uLangsHint">
+            <p class="hint" id="uLangsHint">Two-letter codes, comma separated. For example en,es</p>
+          </div>
+          <input type="hidden" id="uId">
+          <div class="row">
+            <button class="primary" type="submit" id="uSubmit">Add to the team</button>
+            <button type="button" class="quiet" id="uCancel" hidden>Cancel</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="scroll-x"><table id="usherTable">
+      <caption class="sr-only">Team roster</caption>
+      <thead><tr><th>Name</th><th>Role</th><th>Languages</th><th>Formation</th><th>Edit</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+
+    <h2>Masses</h2>
+    <p class="small muted">Seeded Mass times are placeholders. Confirm each one against the
+       parish schedule; the warning clears when you do.</p>
+    <div class="card">
+      <form id="slotForm" class="grid two">
+        <div>
+          <div class="field">
+            <label for="sLabel">Label</label>
+            <input id="sLabel" type="text" required placeholder="Sunday 10:00 Sung Mass">
+          </div>
+          <div class="field">
+            <label for="sWhen">Date and time <span class="hint">parish time</span></label>
+            <input id="sWhen" type="datetime-local" required>
+          </div>
+        </div>
+        <div>
+          <div class="field">
+            <label for="sLang">Language</label>
+            <input id="sLang" type="text" value="en">
+          </div>
+          <div class="field">
+            <label for="sNeeded">Ushers needed</label>
+            <input id="sNeeded" type="number" min="1" max="30" value="4">
+          </div>
+          <input type="hidden" id="sId">
+          <div class="row">
+            <button class="primary" type="submit" id="sSubmit">Add this Mass</button>
+            <button type="button" class="quiet" id="sCancel" hidden>Cancel</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div id="slotList"></div>
+
+    <h2>Meetings</h2>
+    <div class="card">
+      <form id="meetingForm">
+        <div class="grid two">
+          <div class="field">
+            <label for="mTitle">Title</label>
+            <input id="mTitle" type="text" required>
+          </div>
+          <div class="field">
+            <label for="mWhen">Date and time <span class="hint">parish time</span></label>
+            <input id="mWhen" type="datetime-local" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="mLocation">Location</label>
+          <input id="mLocation" type="text" placeholder="Parish hall">
+        </div>
+        <div class="field">
+          <label for="mAgenda">Agenda</label>
+          <textarea id="mAgenda" placeholder="1. Welcome and prayer"></textarea>
+        </div>
+        <div class="field">
+          <label for="mMinutes">Minutes <span class="hint">written after the meeting</span></label>
+          <textarea id="mMinutes"></textarea>
+        </div>
+        <input type="hidden" id="mId">
+        <div class="row">
+          <button class="primary" type="submit" id="mSubmit">Schedule it</button>
+          <button type="button" class="quiet" id="mCancel" hidden>Cancel</button>
+        </div>
+      </form>
+    </div>
+    <div id="meetingList"></div>
+
+    <h2>Parish policy</h2>
+    <div class="card">
+      <p class="small muted">Four formation modules deliberately leave local specifics
+         blank: the collection, communion, emergencies, and safe environment. What you
+         write here appears on all four. A blank here is a real gap, not a formatting
+         problem.</p>
+      <form id="parishForm">
+        <div class="field">
+          <label for="pNotes">Local policy notes</label>
+          <textarea id="pNotes" rows="8" placeholder="Where the offering is secured and who has access.
+AED location and evacuation assignments.
+Diocesan safe environment program name and reporting number."></textarea>
+        </div>
+        <div class="field">
+          <label for="pPass">Change the coordinator passphrase <span class="hint">optional</span></label>
+          <input id="pPass" type="password" autocomplete="new-password" minlength="10">
+          <p class="hint">At least 10 characters. Leave blank to keep the current one.</p>
+        </div>
+        <button class="primary" type="submit">Save</button>
+      </form>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site wrap">
+  <p>This screen writes to the parish database. Everything here is attributable to
+     the coordinator session.</p>
+</footer>
+
+<script type="module" src="/assets/js/page-admin.js"></script>
+</body>
+</html>

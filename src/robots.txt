@@ -1,0 +1,4 @@
+# Ostiary is a parish-internal tool, not a public directory. Nothing here
+# belongs in a search index: the roster carries volunteers' names.
+User-agent: *
+Disallow: /

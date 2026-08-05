@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meetings: Ostiary</title>
+<meta name="theme-color" content="#7a2231">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="/assets/css/app.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="/">Ost<span>i</span>ary <small>Ministers of hospitality</small></a>
+    <nav class="main" aria-label="Main">
+      <a href="/roster">Roster</a>
+      <a href="/formation">Formation</a>
+      <a href="/meetings">Meetings</a>
+      <a href="/about">About</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<noscript>
+  <p class="banner"><strong>This page needs JavaScript.</strong>
+     Ostiary is a signed-in tool for a parish usher team, so its screens are built
+     in the browser. If you cannot enable scripts, ask your coordinator for a
+     printed roster: there is a "Print this roster" button on the roster page.</p>
+</noscript>
+  <div id="live" class="sr-only" aria-live="polite"></div>
+  <p id="error" class="banner" role="alert" hidden></p>
+
+  <h1>Meetings</h1>
+  <p class="muted" id="identity"></p>
+
+  <div class="row" role="group" aria-label="Which meetings to show">
+    <button type="button" id="tabUpcoming" aria-pressed="true">Upcoming</button>
+    <button type="button" id="tabPast" aria-pressed="false">Past and minutes</button>
+  </div>
+
+  <div id="meetings" style="margin-top:1.2rem;">
+    <p class="muted">Loading.</p>
+  </div>
+</main>
+
+<footer class="site wrap">
+  <p>Minutes are written by the coordinator after the meeting.</p>
+</footer>
+
+<script type="module" src="/assets/js/page-meetings.js"></script>
+</body>
+</html>

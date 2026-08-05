@@ -1,0 +1,33 @@
+name = "ostiary"
+compatibility_date = "2025-01-01"
+pages_build_output_dir = "src"
+
+# =============================================================================
+# Ostiary: usher formation and meeting organization.
+# =============================================================================
+# Its own D1, deliberately NOT lachurches-db. This database holds parishioner
+# names, emails, and phone numbers; lachurches-db is a public directory.
+# Keep the boundary. See docs/PLAN.md.
+# =============================================================================
+
+[[d1_databases]]
+binding = "DB"
+database_name = "ostiary-db"
+# Placeholder. Replace with the id printed by `wrangler d1 create ostiary-db`.
+#
+# It is deliberately an obviously-fake all-zero UUID rather than an empty
+# string: `wrangler pages dev` asserts on an empty database_id and dies with
+# "The expression evaluated to a falsy value", which tells you nothing. A
+# well-formed but nonexistent id still fails loudly at deploy time with
+# "D1 database not found", which is the behaviour we actually wanted.
+database_id = "00000000-0000-0000-0000-000000000000"
+
+# Secrets, set with:
+#   wrangler pages secret put SESSION_SECRET --project-name=ostiary
+#
+#   SESSION_SECRET  - HMAC key for signed session cookies. 32+ random bytes.
+#                     Generate: openssl rand -base64 32
+#
+# There is no fallback value. If SESSION_SECRET is unset the API returns 503
+# on every authenticated route instead of signing cookies with a default,
+# which would let anyone forge a coordinator session.

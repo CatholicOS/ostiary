@@ -1,0 +1,7 @@
+node_modules/
+.wrangler/
+.seed.sql
+.dev-parishes.sql
+.places-seed.sql
+.env
+.env.*

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Formation: Ostiary</title>
+<meta name="theme-color" content="#7a2231">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="/assets/css/app.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="/">Ost<span>i</span>ary <small>Ministers of hospitality</small></a>
+    <nav class="main" aria-label="Main">
+      <a href="/roster">Roster</a>
+      <a href="/formation">Formation</a>
+      <a href="/meetings">Meetings</a>
+      <a href="/about">About</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<noscript>
+  <p class="banner"><strong>This page needs JavaScript.</strong>
+     Ostiary is a signed-in tool for a parish usher team, so its screens are built
+     in the browser. If you cannot enable scripts, ask your coordinator for a
+     printed roster: there is a "Print this roster" button on the roster page.</p>
+</noscript>
+  <div id="live" class="sr-only" aria-live="polite"></div>
+  <p id="error" class="banner" role="alert" hidden></p>
+
+  <!-- module list -->
+  <section id="listView">
+    <h1>Formation</h1>
+    <p class="muted" id="identity"></p>
+    <p>Eight modules. Work through them in order if you are new; jump to whichever
+       one you need if you are not.</p>
+
+    <div class="card">
+      <div class="row between">
+        <strong id="progressText">Loading.</strong>
+        <span class="pill plain" id="progressPill"></span>
+      </div>
+      <div class="progress-track" style="margin-top:.6rem;" role="img"
+           id="progressBar" aria-label="Formation progress">
+        <div class="progress-fill" id="progressFill" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div id="modules"></div>
+  </section>
+
+  <!-- single module -->
+  <section id="moduleView" hidden>
+    <p><button type="button" class="quiet" id="backBtn">&#8592; All modules</button></p>
+    <h1 id="modTitle"></h1>
+    <p class="muted" id="modMeta"></p>
+
+    <div id="policyBanner" class="banner" hidden>
+      <strong>This module describes general practice only.</strong>
+      <p>Your parish's written policy governs. The specifics below are deliberately
+         not filled in here, because inventing them would be worse than leaving them
+         blank. Your coordinator adds them.</p>
+      <div id="policyNotes"></div>
+    </div>
+
+    <div id="modBody"></div>
+
+    <form id="checkForm" class="card">
+      <h2>Self-check</h2>
+      <p class="small muted">A wrong answer does not block you. It is recorded so your
+         coordinator knows what to go over at the next meeting.</p>
+      <div id="questions"></div>
+      <button class="primary" type="submit">Finish this module</button>
+    </form>
+
+    <div id="results" hidden></div>
+  </section>
+</main>
+
+<footer class="site wrap">
+  <p>Curriculum is versioned in the repository so a pastor can review it as a diff.</p>
+</footer>
+
+<script type="module" src="/assets/js/page-formation.js"></script>
+</body>
+</html>

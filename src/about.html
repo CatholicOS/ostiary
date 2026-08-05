@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>About: Ostiary</title>
+<meta name="description" content="What Ostiary is, what it deliberately does not know, and how the parish fills the gaps.">
+<meta name="theme-color" content="#7a2231">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="/assets/css/app.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="/">Ost<span>i</span>ary <small>Ministers of hospitality</small></a>
+    <nav class="main" aria-label="Main">
+      <a href="/roster">Roster</a>
+      <a href="/formation">Formation</a>
+      <a href="/meetings">Meetings</a>
+      <a href="/about">About</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<noscript>
+  <p class="banner"><strong>This page needs JavaScript.</strong>
+     Ostiary is a signed-in tool for a parish usher team, so its screens are built
+     in the browser. If you cannot enable scripts, ask your coordinator for a
+     printed roster: there is a "Print this roster" button on the roster page.</p>
+</noscript>
+  <h1>About Ostiary</h1>
+
+  <p>Until 1972 the Latin Church ordained men to the minor order of
+     <em>ostiarius</em>: the porter, the doorkeeper. He held the keys, opened
+     and shut the doors, and rang the bell. The order was suppressed. The work
+     was not. Ushers are what is left of it, and this app is named for them.</p>
+
+  <h2>What it does</h2>
+  <p>Two things a parish currently does in a group text and on a paper sign-up
+     sheet taped inside the sacristy door.</p>
+  <p><strong>Formation.</strong> Eight modules a new usher works through, with
+     progress recorded per person, so a coordinator can tell who has actually
+     been trained before handing them a collection basket.</p>
+  <p><strong>Organization.</strong> Mass-by-Mass rosters ushers sign up for
+     themselves, sub requests when somebody cannot make a slot, and team
+     meetings with agendas, minutes, and attendance.</p>
+
+  <h2>What it deliberately does not know</h2>
+  <div class="banner">
+    <strong>Four modules are intentionally incomplete.</strong>
+    <p>The collection, communion, emergencies, and safe environment are governed
+       by policy that is diocesan and parish specific. Communion is on that list
+       because low-gluten host and separate-chalice provisions vary parish to
+       parish, and getting it wrong means somebody either does not receive or
+       gets sick. This app does not cite that policy, because no such policy
+       document was read while the curriculum was written, and a confident
+       invented citation is the most dangerous thing formation software can
+       produce. An usher would believe it.</p>
+  </div>
+  <p>Those four modules carry a standing banner and a slot the coordinator
+     fills in from the parish's own written policy. If that slot is empty at
+     your parish, the emptiness is the finding, not a bug.</p>
+
+  <h2>Seeded Mass times are placeholders</h2>
+  <p>The demo parish ships with a plausible Sunday pattern that was never
+     checked against a real parish schedule. Every seeded slot is flagged
+     <span class="pill warn">! Time not confirmed</span> until a coordinator
+     confirms it. A roster built on guessed Mass times is worse than an empty
+     one, because people trust it.</p>
+
+  <h2>How secure this is, precisely</h2>
+  <p>Ushers sign in with a shared parish code and pick their name off a roster.
+     There is no per-person password. Coordinators additionally enter a
+     passphrase, stored as a PBKDF2-SHA256 hash, which is what unlocks any
+     write to the roster or the schedule.</p>
+  <p>That is shoulder-surf resistant, not attacker resistant. Anyone holding the
+     parish code can read that parish's roster and sign themselves up for a
+     Mass. For a volunteer usher list that is an acceptable trade. It would not
+     be acceptable for anything sacramental, financial, or safe-environment
+     related, and the app should not be extended to hold those without a real
+     identity provider first.</p>
+  <p>The database holds names, emails, and phone numbers, which is why it is
+     kept separate from the public parish directory that
+     <a href="https://lachurches.org">lachurches.org</a> serves.</p>
+
+  <h2>Accessibility</h2>
+  <p>Module 3 teaches ushers to read an access need before somebody has to ask.
+     Whether the building can actually meet that need is a different question,
+     and a different app.</p>
+
+  <p><a class="btn" href="/">Back to the start</a></p>
+</main>
+
+<footer class="site wrap">
+  <p>Ostiary. Part of Catholic Social Ventures.</p>
+</footer>
+</body>
+</html>

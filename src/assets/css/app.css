@@ -1,0 +1,314 @@
+/* Ostiary. One stylesheet, no framework.
+   Light and dark both meet 4.5:1 on body text and 3:1 on UI boundaries. */
+
+:root {
+    color-scheme: light dark;
+
+    --ink:        #221a16;
+    --ink-soft:   #57483f;
+    --ink-faint:  #7a695e;
+    --paper:      #fbf7f2;
+    --card:       #ffffff;
+    --line:       #ddd0c4;
+    --line-firm:  #b9a695;
+
+    /* Oxblood: the doorkeeper's colour, and dark enough for white text. */
+    --accent:     #7a2231;
+    --accent-ink: #ffffff;
+    --accent-dim: #f3e5e7;
+
+    --gold:       #8a6a1f;
+    --ok:         #1f6b3f;
+    --ok-dim:     #e2f0e7;
+    --warn:       #8a5a10;
+    --warn-dim:   #f8ecd8;
+    --bad:        #96331f;
+    --bad-dim:    #f8e4de;
+
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(34, 26, 22, .08), 0 4px 12px rgba(34, 26, 22, .05);
+    --tap: 44px;
+    --measure: 68ch;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --ink:        #f2e9e2;
+        --ink-soft:   #c3b3a8;
+        --ink-faint:  #9c8c81;
+        --paper:      #17120f;
+        --card:       #221b17;
+        --line:       #3b302a;
+        --line-firm:  #5a4a41;
+
+        --accent:     #e08b98;
+        --accent-ink: #2a0d13;
+        --accent-dim: #35191f;
+
+        --gold:       #d6b45f;
+        --ok:         #7cc79b;
+        --ok-dim:     #16301f;
+        --warn:       #e0b063;
+        --warn-dim:   #33260f;
+        --bad:        #eb9880;
+        --bad-dim:    #351a12;
+
+        --shadow: 0 1px 2px rgba(0, 0, 0, .5);
+    }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* The UA rule for [hidden] is `display: none`, and ANY author rule that sets
+   display beats it. Buttons and .btn links below set display: inline-flex, so
+   without this the hidden attribute silently does nothing and, for example,
+   "Coordinator tools" stays visible to a plain usher. This must come before
+   the component rules. */
+[hidden] { display: none !important; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 400 17px/1.6 ui-serif, Georgia, "Iowan Old Style", "Times New Roman", serif;
+}
+
+h1, h2, h3 {
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.2;
+    margin: 0 0 .5rem;
+    letter-spacing: -.01em;
+}
+h1 { font-size: 1.9rem; }
+h2 { font-size: 1.3rem; margin-top: 2rem; }
+h3 { font-size: 1.05rem; margin-top: 1.25rem; }
+p  { margin: 0 0 1rem; max-width: var(--measure); }
+
+a { color: var(--accent); text-underline-offset: .18em; }
+a:hover { text-decoration-thickness: 2px; }
+
+/* Focus is never removed, only restyled. 3:1 against both paper and card. */
+:focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 3px;
+}
+
+.skip {
+    position: absolute; left: -9999px; top: 0;
+    background: var(--card); color: var(--ink);
+    padding: .75rem 1rem; z-index: 100; border: 2px solid var(--accent);
+}
+.skip:focus { left: .5rem; top: .5rem; }
+
+/* --- layout ------------------------------------------------------------ */
+
+.wrap { max-width: 66rem; margin: 0 auto; padding: 0 1.1rem 5rem; }
+
+.masthead {
+    border-bottom: 1px solid var(--line);
+    background: var(--card);
+    position: sticky; top: 0; z-index: 20;
+}
+.masthead .wrap {
+    padding-block: .7rem;
+    display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+.brand {
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700; font-size: 1.15rem; letter-spacing: .01em;
+    color: var(--ink); text-decoration: none;
+}
+.brand span { color: var(--accent); }
+.brand small {
+    display: block; font-weight: 400; font-size: .72rem;
+    color: var(--ink-faint); letter-spacing: .04em; text-transform: uppercase;
+}
+
+nav.main { margin-left: auto; display: flex; gap: .25rem; flex-wrap: wrap; }
+nav.main a {
+    display: inline-flex; align-items: center; min-height: var(--tap);
+    padding: 0 .8rem; border-radius: var(--radius);
+    font-family: ui-sans-serif, system-ui, sans-serif; font-size: .93rem;
+    color: var(--ink-soft); text-decoration: none;
+}
+nav.main a:hover { background: var(--accent-dim); color: var(--ink); }
+nav.main a[aria-current="page"] {
+    background: var(--accent); color: var(--accent-ink); font-weight: 600;
+}
+
+/* --- cards and lists --------------------------------------------------- */
+
+.card {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 1.1rem 1.2rem;
+    margin-bottom: 1rem; box-shadow: var(--shadow);
+}
+.card > :last-child { margin-bottom: 0; }
+.card h2, .card h3 { margin-top: 0; }
+
+.grid { display: grid; gap: 1rem; }
+@media (min-width: 46rem) { .grid.two { grid-template-columns: 1fr 1fr; } }
+
+.row { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+.row.between { justify-content: space-between; }
+.stack > * + * { margin-top: .6rem; }
+
+.muted { color: var(--ink-faint); }
+.small { font-size: .88rem; }
+.mono  { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em; }
+.sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* --- controls ---------------------------------------------------------- */
+
+button, .btn {
+    font: 600 .95rem/1 ui-sans-serif, system-ui, sans-serif;
+    min-height: var(--tap); min-width: var(--tap);
+    padding: .6rem 1rem; border-radius: var(--radius);
+    border: 1px solid var(--line-firm); background: var(--card); color: var(--ink);
+    cursor: pointer; display: inline-flex; align-items: center;
+    justify-content: center; gap: .4rem; text-decoration: none;
+}
+button:hover, .btn:hover { border-color: var(--accent); }
+button[disabled] { opacity: .5; cursor: not-allowed; }
+
+.btn-primary, button.primary {
+    background: var(--accent); border-color: var(--accent); color: var(--accent-ink);
+}
+.btn-primary:hover, button.primary:hover { filter: brightness(1.1); }
+
+button.quiet { border-color: transparent; background: transparent; color: var(--ink-soft); }
+button.quiet:hover { background: var(--accent-dim); color: var(--ink); border-color: transparent; }
+
+label { display: block; font: 600 .9rem/1.4 ui-sans-serif, system-ui, sans-serif; margin-bottom: .25rem; }
+.hint { font-size: .85rem; color: var(--ink-faint); font-weight: 400; margin-top: .15rem; }
+
+input[type=text], input[type=password], input[type=email], input[type=tel],
+input[type=number], input[type=datetime-local], select, textarea {
+    width: 100%; min-height: var(--tap);
+    padding: .55rem .7rem; font: inherit; font-size: 1rem;
+    color: var(--ink); background: var(--card);
+    border: 1px solid var(--line-firm); border-radius: var(--radius);
+}
+textarea { min-height: 7rem; resize: vertical; line-height: 1.5; }
+.field { margin-bottom: .9rem; }
+
+/* --- status pills ------------------------------------------------------ */
+/* Status is never colour alone: each pill carries a text label and a glyph. */
+
+.pill {
+    display: inline-flex; align-items: center; gap: .3rem;
+    font: 600 .78rem/1 ui-sans-serif, system-ui, sans-serif;
+    padding: .32rem .55rem; border-radius: 999px;
+    border: 1px solid currentColor; white-space: nowrap;
+}
+.pill.ok    { color: var(--ok);   background: var(--ok-dim); }
+.pill.warn  { color: var(--warn); background: var(--warn-dim); }
+.pill.bad   { color: var(--bad);  background: var(--bad-dim); }
+.pill.plain { color: var(--ink-soft); background: transparent; }
+
+.banner {
+    border-left: 4px solid var(--warn); background: var(--warn-dim);
+    color: var(--ink); padding: .8rem 1rem; border-radius: 0 var(--radius) var(--radius) 0;
+    margin-bottom: 1rem;
+}
+.banner strong { display: block; margin-bottom: .2rem; }
+.banner.info { border-left-color: var(--accent); background: var(--accent-dim); }
+.banner p { margin-bottom: 0; }
+
+/* --- roster / list items ----------------------------------------------- */
+
+.slot {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    background: var(--card); padding: .9rem 1rem; margin-bottom: .7rem;
+}
+.slot.short { border-left: 4px solid var(--warn); }
+.slot.mine  { border-left: 4px solid var(--ok); }
+.slot h3 { margin: 0 0 .15rem; font-size: 1.02rem; }
+.slot .when { font-size: .9rem; color: var(--ink-soft); }
+.names { font-size: .9rem; color: var(--ink-soft); margin-top: .5rem; }
+.names li { display: inline; }
+.names ul { list-style: none; margin: 0; padding: 0; display: inline; }
+.names li + li::before { content: ", "; }
+
+.progress-track {
+    height: 8px; background: var(--line); border-radius: 999px; overflow: hidden;
+}
+.progress-fill { height: 100%; background: var(--ok); }
+
+/* --- misc -------------------------------------------------------------- */
+
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--line); }
+th { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .8rem;
+     text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); }
+/* position: relative is load-bearing, not decoration.
+   The buttons in this table carry .sr-only spans, which are absolutely
+   positioned. Without a positioned ancestor their containing block is the
+   initial one, so a span sitting at x=429 inside the horizontally scrolled
+   table still widened the DOCUMENT to 429px on a 390px phone: a visually
+   hidden element caused a real horizontal scrollbar. Making the scroll
+   container the containing block confines them to it. */
+.scroll-x { overflow-x: auto; position: relative; }
+
+footer.site {
+    border-top: 1px solid var(--line); margin-top: 3rem;
+    padding-top: 1.2rem; font-size: .87rem; color: var(--ink-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .001ms !important; transition-duration: .001ms !important;
+    }
+}
+
+/* --- dialogs ------------------------------------------------------------
+   Replaces window.prompt and window.confirm. showModal() gives focus trapping,
+   Escape, and an inert background for free. */
+
+dialog.modal {
+    border: 1px solid var(--line-firm); border-radius: var(--radius);
+    background: var(--card); color: var(--ink);
+    padding: 1.2rem 1.3rem; max-width: 30rem; width: calc(100vw - 2rem);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, .3);
+}
+dialog.modal::backdrop { background: rgba(20, 14, 12, .55); }
+dialog.modal h2 { margin-top: 0; font-size: 1.15rem; }
+dialog.modal p { margin-bottom: 1rem; }
+
+button.danger {
+    background: var(--bad); border-color: var(--bad); color: #fff;
+}
+@media (prefers-color-scheme: dark) {
+    button.danger { color: #2b0d06; }
+}
+
+/* --- print --------------------------------------------------------------
+   The real workflow: a coordinator prints the Sunday roster and tapes it
+   inside the sacristy door. Drop everything that is not a name and a time. */
+
+@media print {
+    :root {
+        --ink: #000; --ink-soft: #222; --ink-faint: #444;
+        --paper: #fff; --card: #fff; --line: #999; --line-firm: #666;
+        --accent: #000; --accent-dim: #fff; --shadow: none;
+        --ok: #000; --warn: #000; --bad: #000;
+        --ok-dim: #fff; --warn-dim: #fff; --bad-dim: #fff;
+    }
+    body { font-size: 11pt; background: #fff; }
+    .masthead, footer.site, nav.main, .skip, .no-print,
+    #error, #live, dialog { display: none !important; }
+    /* Action buttons are meaningless on paper. */
+    .slot .row button, [role="group"] { display: none !important; }
+    .card, .slot { box-shadow: none; break-inside: avoid; page-break-inside: avoid; }
+    .slot { border-left-width: 1px; padding: .5rem .6rem; margin-bottom: .35rem; }
+    .slot h3 { font-size: 11pt; }
+    h1 { font-size: 16pt; }
+    .pill { border-width: 1px; font-size: 8pt; }
+    a { color: #000; text-decoration: none; }
+}

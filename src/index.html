@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ostiary: usher formation and rosters</title>
+<meta name="description" content="Formation and Mass rosters for parish ushers, the ministers of hospitality.">
+<meta name="theme-color" content="#7a2231">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="/assets/css/app.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="/">Ost<span>i</span>ary <small>Ministers of hospitality</small></a>
+    <nav class="main" aria-label="Main">
+      <a href="/roster">Roster</a>
+      <a href="/formation">Formation</a>
+      <a href="/meetings">Meetings</a>
+      <a href="/about">About</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<noscript>
+  <p class="banner"><strong>This page needs JavaScript.</strong>
+     Ostiary is a signed-in tool for a parish usher team, so its screens are built
+     in the browser. If you cannot enable scripts, ask your coordinator for a
+     printed roster: there is a "Print this roster" button on the roster page.</p>
+</noscript>
+  <div id="live" class="sr-only" aria-live="polite"></div>
+  <p id="error" class="banner" role="alert" hidden></p>
+
+  <!-- ===================== signed out ===================== -->
+  <section id="signin" hidden>
+    <h1>Sign in</h1>
+    <p class="muted">Your coordinator gives you the parish code. There is no password
+      for ushers: you pick your name off the roster.</p>
+
+    <div class="card" style="max-width: 30rem;">
+      <form id="codeForm">
+        <div class="field">
+          <label for="code">Parish code</label>
+          <input id="code" name="code" type="text" autocomplete="off"
+                 autocapitalize="characters" spellcheck="false" required
+                 aria-describedby="codeHint">
+          <p class="hint" id="codeHint">For example, CLEMENT.</p>
+        </div>
+        <button class="primary" type="submit">Continue</button>
+      </form>
+    </div>
+
+    <div class="card" id="whoCard" hidden style="max-width: 30rem;">
+      <h2 id="parishName">Parish</h2>
+
+      <form id="usherForm">
+        <div class="field">
+          <label for="usher">Who are you?</label>
+          <select id="usher" name="usher" required></select>
+          <p class="hint">Not listed? Ask your coordinator to add you.</p>
+        </div>
+        <button class="primary" type="submit">Sign in</button>
+      </form>
+
+      <hr style="border:0;border-top:1px solid var(--line);margin:1.4rem 0;">
+
+      <form id="adminForm">
+        <div class="field">
+          <label for="passphrase">Coordinator passphrase</label>
+          <input id="passphrase" name="passphrase" type="password"
+                 autocomplete="current-password">
+          <p class="hint">Only coordinators need this. It unlocks the admin screen.</p>
+        </div>
+        <button type="submit">Sign in as coordinator</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================== signed in ====================== -->
+  <section id="dash" hidden>
+    <h1>Good to see you</h1>
+    <p class="muted" id="identity"></p>
+
+    <div class="grid two">
+      <div class="card">
+        <h2>Your next Mass</h2>
+        <div id="nextSlot"><p class="muted">Loading.</p></div>
+        <p><a class="btn" href="/roster">Open the roster</a></p>
+      </div>
+
+      <div class="card">
+        <h2>Formation</h2>
+        <div id="formationSummary"><p class="muted">Loading.</p></div>
+        <p><a class="btn" href="/formation">Continue formation</a></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Next meeting</h2>
+      <div id="nextMeeting"><p class="muted">Loading.</p></div>
+      <p><a class="btn" href="/meetings">All meetings</a></p>
+    </div>
+
+    <div class="row">
+      <a class="btn" id="adminLink" href="/admin" hidden>Coordinator tools</a>
+      <button type="button" class="quiet" id="signOut">Sign out</button>
+    </div>
+  </section>
+</main>
+
+<footer class="site wrap">
+  <p>Ostiary. Named for the <em>ostiarius</em>, the doorkeeper, a minor order of the
+     Latin Church until 1972.</p>
+</footer>
+
+<script type="module" src="/assets/js/page-index.js"></script>
+</body>
+</html>
