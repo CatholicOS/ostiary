@@ -14,7 +14,7 @@ import { pbkdf2Sync, randomBytes, randomUUID } from 'node:crypto';
 
 const DEMO = process.argv.includes('--demo');
 const NOW = Math.floor(Date.now() / 1000);
-const PBKDF2_ITERATIONS = 210000; // OWASP 2023 floor for PBKDF2-HMAC-SHA256
+const PBKDF2_ITERATIONS = 100000; // Cloudflare Workers' hard PBKDF2 cap; see auth.ts
 
 // Dev-only default. Real deployments set OSTIARY_ADMIN_PASSPHRASE, and the
 // coordinator changes it from the admin screen afterwards.

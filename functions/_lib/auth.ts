@@ -215,7 +215,12 @@ export async function verifyPassphrase(plain: string, stored: string | null): Pr
     return timingSafeEqual(new Uint8Array(bits), expected);
 }
 
-export async function hashPassphrase(plain: string, iterations = 210000): Promise<string> {
+// 100,000 is the Cloudflare Workers runtime's hard cap on PBKDF2 iterations:
+// deriveBits throws above it in production (local workerd does not enforce it,
+// so only a deployed test catches this). Below the OWASP 210k floor, accepted
+// deliberately: the passphrase gates a volunteer roster, not anything
+// sacramental or financial, and the join code is already shared knowledge.
+export async function hashPassphrase(plain: string, iterations = 100000): Promise<string> {
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const material = await crypto.subtle.importKey(
         'raw', enc.encode(plain), 'PBKDF2', false, ['deriveBits'],
