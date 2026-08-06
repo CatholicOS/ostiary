@@ -1,0 +1,46 @@
+# Runs the same two suites a contributor runs locally, per docs/DEPLOY.md:
+# the unit tests (no server) and the smoke suite against a real local stack.
+# There is no build step; if these are green, the thing that ships is the
+# thing that was tested.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Node 22.18+ strips TypeScript types natively, which is how the unit
+      # tests import functions/_lib/*.ts with no build step.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - run: npm install
+
+      - name: Unit tests (no server)
+        run: node tests/google.test.mjs
+
+      - name: Smoke suite against a real local stack
+        run: |
+          npx wrangler d1 execute ostiary-db --local --file=./schema.sql --persist-to .wrangler/state
+          OSTIARY_ADMIN_PASSPHRASE=ci-local-passphrase node scripts/seed.mjs --demo > .seed.sql
+          npx wrangler d1 execute ostiary-db --local --file=./.seed.sql --persist-to .wrangler/state
+          # Do not add --d1 DB=... here: it points miniflare at a different
+          # local sqlite file than d1 execute wrote to. See docs/DEPLOY.md.
+          npx wrangler pages dev src --port 8788 --persist-to .wrangler/state \
+            --binding SESSION_SECRET=ci-only-secret-at-least-32-bytes-long > dev.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -sf -o /dev/null http://127.0.0.1:8788/ && break
+            sleep 2
+          done
+          BASE=http://127.0.0.1:8788 OSTIARY_ADMIN_PASSPHRASE=ci-local-passphrase node tests/smoke.mjs
+
+      - name: Server log on failure
+        if: failure()
+        run: tail -50 dev.log || true

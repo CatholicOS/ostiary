@@ -16,9 +16,10 @@ wrangler pages dev src --port 8793 --persist-to .wrangler/state \
   --binding SESSION_SECRET="local-dev-secret-at-least-32-bytes-long"
 
 # in another shell
-node tests/google.test.mjs  # 45 passed, 0 failed (no server needed)
+node tests/google.test.mjs  # 50 passed, 0 failed (no server needed)
 BASE=http://127.0.0.1:8793 OSTIARY_ADMIN_PASSPHRASE="local-dev-passphrase" \
-  node tests/smoke.mjs      # 56 passed, 0 failed
+  node tests/smoke.mjs      # 70 passed, 0 failed (60 + a printed SKIP note on
+                            # a rerun: the self-onboarding block caps per day)
 ```
 
 Google is optional and off by default; without `GOOGLE_CLIENT_ID` and
@@ -101,6 +102,17 @@ The smoke test writes: it creates and deletes a Mass, adds an usher named
 "Smoke Test Usher", and saves policy notes. Against production that leaves one
 usher row and a policy-note edit behind. Delete the row afterwards or accept it.
 
+It also exercises self-onboarding, which creates up to two parishes named
+"Smoke Start Parish <suffix>" and spends that much of the real daily creation
+cap. There is no delete endpoint, so cleanup is manual:
+
+```sql
+DELETE FROM parishes WHERE name LIKE 'Smoke Start Parish %';
+-- Leave parish_starts alone: those rows are what the daily caps count.
+```
+
+If the cap is already spent, the block prints a SKIP note and passes.
+
 ## First real-use checklist
 
 1. **Confirm the Mass times.** Every seeded slot ships flagged
@@ -114,6 +126,11 @@ usher row and a policy-note edit behind. Delete the row afterwards or accept it.
    number, those four modules are incomplete by design.
 3. **Change the passphrase** from the admin screen after the first sign-in.
 4. **Add the real team** and delete anything created by a smoke run.
+
+Parishes that arrive through `/start` (self-onboarding) skip step 1 entirely:
+they begin with **zero** Mass slots and one coordinator, and that coordinator
+builds their own Mass schedule in the admin screen. Steps 2 and 3 still apply
+to them; the generated passphrase works but a chosen one is easier to keep.
 
 ## What this does not do
 

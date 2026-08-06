@@ -89,12 +89,14 @@ say('');
 // ("please use the state.storage.transaction() APIs"), and `wrangler d1
 // execute --file` already applies the batch atomically on both targets.
 
+// reviewed = 1: an operator ran this script, which is exactly what the
+// reviewed flag records. Self-onboarded parishes start at 0.
 say(`INSERT OR REPLACE INTO parishes
-  (id, slug, name, city, state, timezone, join_code, admin_hash, policy_notes, created_at, updated_at)
+  (id, slug, name, city, state, timezone, join_code, admin_hash, policy_notes, reviewed, created_at, updated_at)
 VALUES (${q(parishId)}, ${q('st-clement-catholic-church')},
         ${q('St. Clement (by-the-Sea) Catholic Church')}, ${q('Santa Monica')}, ${q('CA')},
         ${q(TZ)}, ${q(JOIN_CODE)}, ${q(hashPassphrase(PASSPHRASE))},
-        ${q('')}, ${NOW}, ${NOW});`);
+        ${q('')}, 1, ${NOW}, ${NOW});`);
 
 const coordinatorId = 'usher-coordinator-seed';
 say(`INSERT OR REPLACE INTO ushers

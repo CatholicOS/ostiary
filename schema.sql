@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS parishes (
   name              TEXT NOT NULL,
   city              TEXT,
   state             TEXT NOT NULL DEFAULT 'CA',
+  country           TEXT,
   timezone          TEXT NOT NULL DEFAULT 'America/Los_Angeles',
 
   -- Usher sign-in: the code a coordinator gives the team.
@@ -28,9 +29,44 @@ CREATE TABLE IF NOT EXISTS parishes (
   -- Free text the coordinator fills in; rendered on the policy-gap modules.
   policy_notes      TEXT,
 
+  -- 0 for a parish that created itself through /api/parish/start, 1 once a
+  -- platform owner has looked at it (or when an operator created it). Nothing
+  -- gates on this yet; it exists so unreviewed parishes can be listed later.
+  reviewed          INTEGER NOT NULL DEFAULT 0 CHECK (reviewed IN (0, 1)),
+
   created_at        INTEGER NOT NULL,
   updated_at        INTEGER NOT NULL
 );
+
+-- ---------------------------------------------------------------------------
+-- Self-onboarding ledger
+-- One row per parish created through POST /api/parish/start. This is what the
+-- daily caps count against (2 per caller, 20 global, per 24 hours).
+--
+-- ip_hash is HMAC-SHA256 of the caller's IP under SESSION_SECRET. The raw IP
+-- is never stored anywhere: the hash can answer "same caller today?" and
+-- nothing else. origin_note is the user-agent, truncated, kept only so a
+-- platform owner reviewing abuse has something to read.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS parish_starts (
+  id                TEXT PRIMARY KEY,
+  -- Which parish this creation produced. No FK on purpose: the ledger should
+  -- survive a parish being deleted, or the caps forget the creation happened.
+  parish_id         TEXT,
+  ip_hash           TEXT NOT NULL,
+  origin_note       TEXT,
+  created_at        INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_parish_starts_time ON parish_starts(created_at);
+CREATE INDEX IF NOT EXISTS idx_parish_starts_ip   ON parish_starts(ip_hash, created_at);
+
+-- Operator-created parishes predate the reviewed flag and count as reviewed.
+-- Self-onboarded parishes are exactly the ones recorded in parish_starts, so
+-- this is safe to re-run: it never promotes a parish that created itself.
+-- (On a fresh database it touches zero rows. On a live database the reviewed
+-- column arrives by ALTER first; see docs/DEPLOY.md.)
+UPDATE parishes SET reviewed = 1
+WHERE id NOT IN (SELECT parish_id FROM parish_starts WHERE parish_id IS NOT NULL);
 
 -- ---------------------------------------------------------------------------
 -- People

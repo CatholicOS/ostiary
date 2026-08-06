@@ -14,6 +14,7 @@ import { getMeetings, postRsvp } from '../_lib/routes-meetings';
 import {
     deleteMeeting, deleteSlot, postAttendance, postMeeting, postParish, postSlot, postUsher,
 } from '../_lib/routes-admin';
+import { getParishStartHealth, postParishStart } from '../_lib/routes-start';
 import {
     getGoogleCallback, getGoogleConnect, getGoogleSignin, getGoogleStatus,
     postGoogleDisconnect, postGoogleGroup,
@@ -27,6 +28,10 @@ const ROUTES: Record<string, Handler> = {
     'GET parish': getParishForSignIn,
     'POST session': postSession,
     'DELETE session': deleteSession,
+
+    // public: parish self-onboarding, capped per day (see routes-start.ts)
+    'POST parish/start': postParishStart,
+    'GET parish/start/health': getParishStartHealth,
 
     // signed-in usher
     'GET me': getMe,

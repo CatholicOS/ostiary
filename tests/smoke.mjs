@@ -330,6 +330,113 @@ console.log('\nadmin');
     }
 }
 
+// --- parish self-onboarding ------------------------------------------------
+// Creation is capped (2 per caller IP per 24h, 20 global). The local dev IP is
+// stable, so repeated smoke runs against the same local database WILL exhaust
+// the cap; a capped first create is therefore a SKIP with a printed note, not
+// a failure. Against production the cap is just as real, and the parishes a
+// green run creates are left behind: there is no delete endpoint, so removing
+// them (DELETE FROM parishes WHERE name LIKE 'Smoke Start Parish %'; the
+// parish_starts ledger rows stay, they are what the caps count) is a
+// documented manual step.
+console.log('\nself-onboarding');
+{
+    const suffix = Math.random().toString(36).slice(2, 8);
+
+    const health = await call('parish/start/health');
+    check('start health answers', health.status === 200
+        && typeof health.data?.open === 'boolean', `status ${health.status}`);
+
+    // Validation runs before the cap check server-side, so these hold even on
+    // a day the caps are spent.
+    const badTz = await call('parish/start', {
+        method: 'POST',
+        body: { name: `Smoke Start Parish ${suffix}`, timezone: 'Not/AZone',
+                coordinator_name: 'Smoke Coordinator' },
+    });
+    check('an implausible timezone is rejected', badTz.status === 400, `status ${badTz.status}`);
+
+    const shortName = await call('parish/start', {
+        method: 'POST',
+        body: { name: 'Ab', timezone: 'America/Chicago', coordinator_name: 'Smoke Coordinator' },
+    });
+    check('a too-short parish name is rejected', shortName.status === 400);
+
+    const noCoord = await call('parish/start', {
+        method: 'POST',
+        body: { name: `Smoke Start Parish ${suffix}`, timezone: 'America/Chicago' },
+    });
+    check('a missing coordinator name is rejected', noCoord.status === 400);
+
+    const created = await call('parish/start', {
+        method: 'POST',
+        body: {
+            name: `Smoke Start Parish ${suffix}`, city: 'Testville',
+            timezone: 'America/Chicago', coordinator_name: 'Smoke Coordinator',
+        },
+    });
+
+    if (created.status === 429) {
+        console.log('  SKIP creation cap already reached on this database today;');
+        console.log('       the rest of the self-onboarding block needs a fresh parish.');
+        console.log('       (Expected on repeated local runs. Re-init the local DB to re-test.)');
+    } else {
+        check('parish created', created.status === 200 && created.data?.ok,
+            `status ${created.status} :: ${created.data?.error}`);
+        check('join code returned once', /^[A-HJ-NP-Z2-9]{6,8}$/.test(created.data?.join_code ?? ''),
+            `got ${created.data?.join_code}`);
+        check('passphrase returned once, in the stated shape',
+            /^([A-HJ-NP-Z2-9]{5}-){3}[A-HJ-NP-Z2-9]{5}$/.test(created.data?.passphrase ?? ''),
+            `got ${created.data?.passphrase}`);
+
+        const newCode = created.data.join_code;
+        const coord = jar();
+        const login = await call('session', {
+            method: 'POST', body: { code: newCode, passphrase: created.data.passphrase }, jar: coord,
+        });
+        check('new coordinator signs in with the returned passphrase',
+            login.status === 200 && login.data?.admin === true, `status ${login.status}`);
+
+        // Isolation: the new parish must see none of the seed parish's data.
+        const roster = await call('roster?days=42', { jar: coord });
+        check('the new parish roster is empty', roster.status === 200
+            && roster.data?.slots?.length === 0, `got ${roster.data?.slots?.length} slots`);
+        const lookup = await call(`parish?code=${newCode}`);
+        check('the new parish roster holds only its coordinator',
+            lookup.data?.ushers?.length === 1
+                && lookup.data.ushers[0].name === 'Smoke Coordinator',
+            `got ${lookup.data?.ushers?.map((u) => u.name).join(', ')}`);
+
+        const added = await call('admin/usher', {
+            method: 'POST', body: { name: 'Smoke Start Usher' }, jar: coord,
+        });
+        check('the new coordinator can add an usher', added.status === 200 && added.data?.id);
+
+        // The 2-per-IP-per-day cap. This run already used one creation; at
+        // most one more can succeed, so the second or third attempt below
+        // must answer 429. (Which one depends on what earlier runs spent.)
+        const second = await call('parish/start', {
+            method: 'POST',
+            body: { name: `Smoke Start Parish ${suffix} B`, timezone: 'America/Chicago',
+                    coordinator_name: 'Smoke Coordinator' },
+        });
+        const third = second.status === 200
+            ? await call('parish/start', {
+                method: 'POST',
+                body: { name: `Smoke Start Parish ${suffix} C`, timezone: 'America/Chicago',
+                        coordinator_name: 'Smoke Coordinator' },
+            })
+            : second;
+        check('the per-IP daily cap answers 429', third.status === 429, `status ${third.status}`);
+        check('the 429 says so in plain words',
+            /paused for the day/i.test(third.data?.error ?? ''), `got: ${third.data?.error}`);
+
+        const healthAfter = await call('parish/start/health');
+        check('health reports the cap is closed', healthAfter.data?.open === false,
+            `got open=${healthAfter.data?.open}`);
+    }
+}
+
 // --- session teardown ------------------------------------------------------
 console.log('\nsession');
 {

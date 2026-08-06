@@ -68,6 +68,7 @@ across the boundary.
 | `formation_progress` | Usher to module slug, completed timestamp, self-check score |
 | `meetings` | Parish meeting: UTC start, title, location, agenda, minutes |
 | `meeting_rsvps` | Usher to meeting: `yes` / `no` / `maybe`, plus attended flag |
+| `parish_starts` | Self-onboarding cap ledger: HMAC'd caller IP (never the raw IP), truncated user-agent, timestamp |
 
 Curriculum content is **not** in the database. It lives in
 `functions/_lib/curriculum.ts` as the single source of truth, versioned in git,
@@ -106,6 +107,36 @@ stay out until the join-code fallback can actually be turned off.
 
 Consequence for content: the formation module on the collection describes
 *procedure*, never account numbers, safe locations, or alarm codes.
+
+---
+
+## Self-onboarding, and its honesty
+
+Any parish can create its own roster at `/start` (`POST /api/parish/start`).
+No operator, no approval queue. What keeps that honest:
+
+- **The passphrase is shown once.** The server generates a coordinator
+  passphrase (20 random characters from an unambiguous alphabet, 100 bits),
+  stores only its PBKDF2 hash, and returns the plaintext in exactly one
+  response. It cannot be recovered, and the page says so before anything else.
+  The coordinator can replace it from the admin screen.
+- **Caps, not captchas.** Two creations per caller per 24 hours, twenty
+  globally. Over the cap the answer is a 429 that says "ask again tomorrow"
+  in words, and `GET /api/parish/start/health` lets the page say it before
+  the form is filled in. No Turnstile, no third-party service: the caps make
+  bulk abuse pointless and a captcha would only tax the legitimate.
+- **`ip_hash`, never the IP.** The cap ledger (`parish_starts`) stores
+  HMAC-SHA256 of the caller's IP under `SESSION_SECRET`. That answers "same
+  caller today?" and nothing else; raw addresses are never written anywhere.
+  The truncated user-agent (`origin_note`) is kept for abuse review.
+- **The `reviewed` flag.** Self-created parishes carry `reviewed = 0`;
+  operator-seeded ones carry 1. Nothing gates on it yet. It exists so a
+  platform owner can later list what arrived unreviewed, rather than
+  discovering it by accident.
+
+A new parish arrives with zero Mass slots and one usher (the coordinator).
+The empty roster is the design: guessed Mass times were already ruled out for
+the seed parish, and the rule holds harder for a parish nobody here has seen.
 
 ---
 

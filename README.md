@@ -18,8 +18,8 @@ Cloudflare Pages + D1 + plain HTML + TypeScript Pages Functions.
 ```bash
 npm run setup:local
 npm run dev
-node tests/google.test.mjs   # 45 unit assertions, no server needed
-node tests/smoke.mjs         # 56 assertions against the running stack
+node tests/google.test.mjs   # 50 unit assertions, no server needed
+node tests/smoke.mjs         # 70 assertions against the running stack
 ```
 
 Four of the eight modules (collection, communion, emergencies, safe
@@ -38,4 +38,10 @@ server-render: every screen is built in the browser and every page carries a
 `<noscript>` saying so and pointing at the printable roster. `robots.txt`
 disallows everything, because the roster carries volunteers' names.
 
-Licensed under the [Apache License 2.0](LICENSE).
+Any parish can create its own roster from the sign-in screen: the start flow
+issues a join code and a once-shown coordinator passphrase, with plain daily
+caps against abuse.
+
+Licensed under the [Apache License 2.0](LICENSE). Contributions are welcome:
+see [CONTRIBUTING.md](CONTRIBUTING.md), and [SECURITY.md](SECURITY.md) for
+what the security model honestly is.

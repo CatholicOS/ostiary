@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Start your parish: Ostiary</title>
+<meta name="description" content="Create an usher roster for your parish. No operator, no waiting.">
+<meta name="theme-color" content="#7a2231" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17120f" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="/assets/css/app.css">
+<style>
+  /* Page-scoped styles for the once-shown credentials. An inline style block
+     is within the CSP's deliberate style-src trade (see _headers), and the
+     app stylesheet sits at the 500-line house limit; these rules serve only
+     this page. Scripts stay external, as everywhere. */
+  .credential { margin-bottom: 1.15rem; }
+  .cred-label {
+    display: block;
+    font: 600 .78rem/1 ui-sans-serif, system-ui, sans-serif;
+    text-transform: uppercase; letter-spacing: .09em;
+    color: var(--ink-faint); margin-bottom: .3rem;
+  }
+  .cred-value {
+    display: block; font-size: 1.3rem; letter-spacing: .05em;
+    overflow-wrap: anywhere; user-select: all;
+    background: var(--paper); border: 1px dashed var(--line-firm);
+    border-radius: var(--radius); padding: .55rem .7rem;
+  }
+  .credential .hint { margin-top: .35rem; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="masthead">
+  <div class="wrap">
+    <a class="brand" href="/">Ost<span>i</span>ary <small>Ministers of hospitality</small></a>
+    <nav class="main" aria-label="Main">
+      <a href="/roster">Roster</a>
+      <a href="/formation">Formation</a>
+      <a href="/meetings">Meetings</a>
+      <a href="/about">About</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+<noscript>
+  <p class="banner"><strong>This page needs JavaScript.</strong>
+     Ostiary is a signed-in tool for a parish usher team, so its screens are built
+     in the browser. If you cannot enable scripts, ask your coordinator for a
+     printed roster: there is a "Print this roster" button on the roster page.</p>
+</noscript>
+  <div id="live" class="sr-only" aria-live="polite"></div>
+  <p id="error" class="banner" role="alert" hidden></p>
+
+  <!-- ===================== the form ======================= -->
+  <section id="start">
+    <h1>Start a roster for your parish</h1>
+    <p class="muted">One form, one minute. You get a join code for your ushers
+      and a coordinator passphrase for yourself. The roster starts empty: you
+      add your own Mass schedule and your own team.</p>
+
+    <p id="paused" class="banner" hidden><strong>Creation is paused for the day.</strong>
+      Ask again tomorrow, or open an issue on GitHub.</p>
+
+    <div class="card narrow">
+      <form id="startForm">
+        <div class="field">
+          <label for="parishName">Parish name</label>
+          <input id="parishName" name="parishName" type="text" required
+                 minlength="3" maxlength="120" autocomplete="organization"
+                 aria-describedby="parishNameHint">
+          <p class="hint" id="parishNameHint">For example, St. Clement Catholic Church.</p>
+        </div>
+
+        <div class="field">
+          <label for="city">City</label>
+          <input id="city" name="city" type="text" maxlength="80"
+                 autocomplete="address-level2">
+        </div>
+
+        <div class="field">
+          <label for="region">State or region <span class="muted">(optional)</span></label>
+          <input id="region" name="region" type="text" maxlength="80"
+                 autocomplete="address-level1">
+        </div>
+
+        <div class="field">
+          <label for="country">Country <span class="muted">(optional)</span></label>
+          <input id="country" name="country" type="text" maxlength="80"
+                 autocomplete="country-name">
+        </div>
+
+        <div class="field">
+          <label for="tz">Timezone</label>
+          <select id="tz" name="tz" required></select>
+          <p class="hint">Mass times are shown in this zone.</p>
+        </div>
+
+        <div class="field" id="tzOtherField" hidden>
+          <label for="tzOther">IANA timezone name</label>
+          <input id="tzOther" name="tzOther" type="text" maxlength="60"
+                 spellcheck="false" aria-describedby="tzOtherHint">
+          <p class="hint" id="tzOtherHint">For example, Europe/Warsaw or Africa/Accra.</p>
+        </div>
+
+        <div class="divider">You</div>
+
+        <div class="field">
+          <label for="coordName">Your name</label>
+          <input id="coordName" name="coordName" type="text" required
+                 maxlength="120" autocomplete="name">
+          <p class="hint">You become the first coordinator.</p>
+        </div>
+
+        <div class="field">
+          <label for="coordEmail">Your email <span class="muted">(optional)</span></label>
+          <input id="coordEmail" name="coordEmail" type="email" maxlength="200"
+                 autocomplete="email" aria-describedby="coordEmailHint">
+          <p class="hint" id="coordEmailHint">Used only so a platform owner can
+            reach you about this roster; never shown publicly.</p>
+        </div>
+
+        <button class="primary wide" type="submit" id="createBtn">Create the roster</button>
+      </form>
+    </div>
+
+    <p class="small muted">Already have a parish code? <a href="/">Sign in</a>.</p>
+  </section>
+
+  <!-- ===================== the one showing ================ -->
+  <section id="done" hidden>
+    <h1 tabindex="-1" id="doneTitle">Write these down now</h1>
+    <p class="muted" id="doneParish"></p>
+
+    <div class="card narrow">
+      <div class="credential">
+        <span class="cred-label">Join code</span>
+        <span class="cred-value mono" id="joinCode"></span>
+        <p class="hint">What your ushers type to sign in. Share it with the team.</p>
+      </div>
+      <div class="credential">
+        <span class="cred-label">Coordinator passphrase</span>
+        <span class="cred-value mono" id="passphrase"></span>
+        <p class="hint">Yours alone. It unlocks the admin screen, where you can
+          change it to one of your own choosing.</p>
+      </div>
+
+      <div class="row">
+        <button type="button" id="copyBoth">Copy both</button>
+        <span id="copied" class="pill ok" hidden>Copied</span>
+      </div>
+    </div>
+
+    <div class="banner">
+      <strong>The passphrase is not stored and cannot be recovered.</strong>
+      <p>Only a hash of it is kept, so nobody can read it back later, including
+         us. Write it down before you leave this page. The join code is what
+         your ushers use; the passphrase is what makes you the coordinator.</p>
+    </div>
+
+    <p><a class="btn primary" href="/">Go to sign-in</a></p>
+  </section>
+</main>
+
+<footer class="site wrap">
+  <p>Ostiary. Named for the <em>ostiarius</em>, the doorkeeper, a minor order of the
+     Latin Church until 1972.</p>
+</footer>
+
+<script type="module" src="/assets/js/page-start.js"></script>
+</body>
+</html>
