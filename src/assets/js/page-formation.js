@@ -67,12 +67,12 @@ function openModule(slug) {
         ${s.body.map((p) => `<p>${esc(p)}</p>`).join('')}`).join('');
 
     $('#questions').innerHTML = m.check.map((c, i) => `
-        <fieldset style="border:1px solid var(--line);border-radius:var(--radius);padding:.9rem;margin:0 0 1rem;">
-          <legend style="font-weight:600;padding:0 .4rem;">${esc(c.q)}</legend>
+        <fieldset class="q">
+          <legend>${esc(c.q)}</legend>
           ${c.options.map((o, j) => `
-            <label style="font-weight:400;display:flex;gap:.5rem;align-items:flex-start;min-height:var(--tap);">
-              <input type="radio" name="q${i}" value="${j}" required style="width:auto;min-height:0;margin-top:.5rem;">
-              <span style="padding-top:.35rem;">${esc(o)}</span>
+            <label class="opt">
+              <input type="radio" name="q${i}" value="${j}" required>
+              <span>${esc(o)}</span>
             </label>`).join('')}
         </fieldset>`).join('');
 

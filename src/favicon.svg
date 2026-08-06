@@ -1,9 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Ostiary">
+  <!-- The doorkeeper's mark: an arched doorway with a keyhole. -->
   <rect width="64" height="64" rx="12" fill="#7a2231"/>
   <g fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round">
-    <circle cx="24" cy="24" r="9"/>
-    <path d="M30 30 L46 46"/>
-    <path d="M40 40 L46 34"/>
-    <path d="M46 46 L52 40"/>
+    <path d="M19 51 V31 a13 13 0 0 1 26 0 V51"/>
+  </g>
+  <g fill="#fff">
+    <circle cx="32" cy="34.5" r="4.5"/>
+    <path d="M32 38 L28.2 47 h7.6 Z"/>
   </g>
 </svg>

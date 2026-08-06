@@ -16,9 +16,15 @@ wrangler pages dev src --port 8793 --persist-to .wrangler/state \
   --binding SESSION_SECRET="local-dev-secret-at-least-32-bytes-long"
 
 # in another shell
+node tests/google.test.mjs  # 45 passed, 0 failed (no server needed)
 BASE=http://127.0.0.1:8793 OSTIARY_ADMIN_PASSPHRASE="local-dev-passphrase" \
-  node tests/smoke.mjs      # 50 passed, 0 failed
+  node tests/smoke.mjs      # 56 passed, 0 failed
 ```
+
+Google is optional and off by default; without `GOOGLE_CLIENT_ID` and
+`GOOGLE_CLIENT_SECRET` bindings the smoke test expects the honest 503 from
+`/api/google/status`. Setup, when a parish wants it, is in
+[GOOGLE.md](GOOGLE.md).
 
 Sign in at <http://127.0.0.1:8793> with parish code `CLEMENT`, then either pick
 a name or use the coordinator passphrase.

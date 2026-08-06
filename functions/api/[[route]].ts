@@ -12,8 +12,13 @@ import { getRoster, postCover, postDrop, postSignup, postSubRequest } from '../_
 import { getFormation, getFormationStatus, postFormationComplete } from '../_lib/routes-formation';
 import { getMeetings, postRsvp } from '../_lib/routes-meetings';
 import {
-    deleteSlot, postAttendance, postMeeting, postParish, postSlot, postUsher,
+    deleteMeeting, deleteSlot, postAttendance, postMeeting, postParish, postSlot, postUsher,
 } from '../_lib/routes-admin';
+import {
+    getGoogleCallback, getGoogleConnect, getGoogleSignin, getGoogleStatus,
+    postGoogleDisconnect, postGoogleGroup,
+} from '../_lib/routes-google';
+import { postGoogleGroupSync, postSyncRsvps } from '../_lib/google-sync';
 
 type Handler = (ctx: Ctx) => Response | Promise<Response>;
 
@@ -41,9 +46,23 @@ const ROUTES: Record<string, Handler> = {
     'POST admin/slot': postSlot,
     'DELETE admin/slot': deleteSlot,
     'POST admin/meeting': postMeeting,
+    'DELETE admin/meeting': deleteMeeting,
     'POST admin/attendance': postAttendance,
     'POST admin/parish': postParish,
+
+    // google, all optional per parish; 503 when the env vars are unset
+    'GET google/status': getGoogleStatus,           // public: "does sign-in exist"
+    'GET google/signin': getGoogleSignin,           // public: starts OIDC
+    'GET google/callback': getGoogleCallback,       // public: both flows return here
+    'GET google/connect': getGoogleConnect,         // coordinator
+    'POST google/disconnect': postGoogleDisconnect, // coordinator
+    'POST google/group': postGoogleGroup,           // coordinator
+    'POST google/group/sync': postGoogleGroupSync,  // coordinator
 };
+
+// The one route with a path parameter. A regex here beats teaching the whole
+// table pattern-matching for a single case.
+const SYNC_RSVPS = /^google\/meetings\/([^/]+)\/sync-rsvps$/;
 
 export const onRequest: PagesFunction<Env> = async (context) => {
     const { request, env } = context;
@@ -57,12 +76,14 @@ export const onRequest: PagesFunction<Env> = async (context) => {
         return new Response(null, { status: 204, headers: { Allow: 'GET, POST, DELETE' } });
     }
 
+    const syncMatch = request.method === 'POST' ? SYNC_RSVPS.exec(route) : null;
     const handler = ROUTES[key];
-    if (!handler) return fail(404, `No API route for ${key}.`);
+    if (!handler && !syncMatch) return fail(404, `No API route for ${key}.`);
 
     try {
         const session = await loadSession(request, env);
         const ctx: Ctx = { request, env, url, route, session };
+        if (syncMatch) return await postSyncRsvps(ctx, syncMatch[1]); // coordinator
         return await handler(ctx);
     } catch (err) {
         // A missing SESSION_SECRET is a deployment mistake, not a bug. Say so

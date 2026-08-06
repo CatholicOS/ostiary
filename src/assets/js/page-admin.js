@@ -6,7 +6,7 @@
 import { api, state, requireSession, fmtDateTime, toLocalInputValue, fromLocalInputValue,
          esc, $, say, showError, clearError, confirmAction } from '/assets/js/app.js';
 
-let slots = [], meetings = [], status = null;
+let slots = [], meetings = [], status = null, google = null;
 
 /* --- team --------------------------------------------------------------- */
 
@@ -16,9 +16,9 @@ async function loadTeam() {
         <tr>
           <td>${esc(u.name)}</td>
           <td>${esc(u.role)}</td>
-          <td class="mono">${esc(state.roster?.[u.id]?.languages || '')}</td>
+          <td class="mono">${esc(u.languages || '')}</td>
           <td>${u.done} of ${u.total}
-              ${u.done === u.total ? '<span class="pill ok">&#10003;</span>' : ''}</td>
+              ${u.done === u.total ? '<span class="pill ok">&#10003; Done</span>' : ''}</td>
           <td><button type="button" class="quiet" data-edit-usher="${esc(u.id)}"
                 >Edit<span class="sr-only"> ${esc(u.name)}</span></button></td>
         </tr>`).join('');
@@ -83,10 +83,10 @@ async function loadSlots() {
             ${s.unconfirmed_time ? `<button type="button" class="primary" data-confirm="${esc(s.id)}"
                 >Confirm this time<span class="sr-only"> for ${esc(s.label)}</span></button>` : ''}
             <button type="button" data-edit-slot="${esc(s.id)}">Edit<span class="sr-only"> ${esc(s.label)}</span></button>
-            <button type="button" data-del-slot="${esc(s.id)}">Delete<span class="sr-only"> ${esc(s.label)}</span></button>
+            <button type="button" class="quiet danger" data-del-slot="${esc(s.id)}">Delete<span class="sr-only"> ${esc(s.label)}</span></button>
           </div>
         </article>`).join('')
-        : '<div class="card"><p class="muted">No Masses scheduled.</p></div>';
+        : '<div class="card empty"><p class="muted">No Masses scheduled.</p></div>';
 }
 
 $('#slotForm').addEventListener('submit', async (e) => {
@@ -163,14 +163,19 @@ async function loadMeetings() {
             <div>
               <h3>${esc(m.title)}</h3>
               <p class="when">${esc(fmtDateTime(m.starts_at))}${m.location ? ` at ${esc(m.location)}` : ''}</p>
+              ${m.meet_link ? `<p><a class="meet" href="${esc(m.meet_link)}" rel="noopener"
+                  >Google Meet</a></p>` : ''}
             </div>
             <span class="pill plain">${m.counts.yes} coming</span>
           </div>
           <div class="row" style="margin-top:.6rem;">
             <button type="button" data-edit-meeting="${esc(m.id)}">Edit<span class="sr-only"> ${esc(m.title)}</span></button>
+            ${m.has_calendar_event ? `<button type="button" data-sync-rsvps="${esc(m.id)}"
+                >Sync RSVPs<span class="sr-only"> for ${esc(m.title)}</span></button>` : ''}
+            <button type="button" class="quiet danger" data-del-meeting="${esc(m.id)}">Delete<span class="sr-only"> ${esc(m.title)}</span></button>
           </div>
         </article>`).join('')
-        : '<div class="card"><p class="muted">Nothing scheduled.</p></div>';
+        : '<div class="card empty"><p class="muted">Nothing scheduled.</p></div>';
 }
 
 $('#meetingForm').addEventListener('submit', async (e) => {
@@ -184,26 +189,62 @@ $('#meetingForm').addEventListener('submit', async (e) => {
             title: $('#mTitle').value, starts_at: startsAt,
             location: $('#mLocation').value,
             agenda_md: $('#mAgenda').value, minutes_md: $('#mMinutes').value,
+            send_invites: $('#mInvites').checked || undefined,
         }});
         say('Meeting saved.');
         e.currentTarget.reset();
         $('#mId').value = '';
         $('#mSubmit').textContent = 'Schedule it'; $('#mCancel').hidden = true;
         await loadMeetings();
-    } catch (err) { showError(err); }
+    } catch (err) {
+        showError(err);
+        // "Meeting saved, but Google Calendar failed" means the row exists;
+        // repaint the list so the screen does not deny what the database holds.
+        if (/^Meeting saved/.test(err.message)) await loadMeetings().catch(() => {});
+    }
 });
 
-$('#meetingList').addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-edit-meeting]');
-    if (!btn) return;
-    const m = meetings.find((x) => x.id === btn.dataset.editMeeting);
-    $('#mId').value = m.id; $('#mTitle').value = m.title;
-    $('#mWhen').value = toLocalInputValue(m.starts_at);
-    $('#mLocation').value = m.location || '';
-    $('#mAgenda').value = m.agenda_md || '';
-    $('#mMinutes').value = m.minutes_md || '';
-    $('#mSubmit').textContent = 'Save changes'; $('#mCancel').hidden = false;
-    $('#mTitle').focus();
+$('#meetingList').addEventListener('click', async (e) => {
+    const editBtn = e.target.closest('[data-edit-meeting]');
+    const syncBtn = e.target.closest('[data-sync-rsvps]');
+    const delBtn = e.target.closest('[data-del-meeting]');
+    try {
+        clearError();
+        if (editBtn) {
+            const m = meetings.find((x) => x.id === editBtn.dataset.editMeeting);
+            $('#mId').value = m.id; $('#mTitle').value = m.title;
+            $('#mWhen').value = toLocalInputValue(m.starts_at);
+            $('#mLocation').value = m.location || '';
+            $('#mAgenda').value = m.agenda_md || '';
+            $('#mMinutes').value = m.minutes_md || '';
+            // A meeting that already has a calendar event should keep it in
+            // step by default; unticking is the coordinator's call.
+            $('#mInvites').checked = !!m.has_calendar_event;
+            $('#mSubmit').textContent = 'Save changes'; $('#mCancel').hidden = false;
+            $('#mTitle').focus();
+        } else if (syncBtn) {
+            const r = await api(`google/meetings/${encodeURIComponent(syncBtn.dataset.syncRsvps)}/sync-rsvps`,
+                { method: 'POST' });
+            say(`RSVPs synced: ${r.updated} updated, ${r.unmatched} not on the roster, `
+                + `${r.pending} not yet replied.`);
+            await loadMeetings();
+        } else if (delBtn) {
+            const m = meetings.find((x) => x.id === delBtn.dataset.delMeeting);
+            const yes = await confirmAction({
+                title: 'Delete this meeting?',
+                message: `${m.title} on ${fmtDateTime(m.starts_at)}. RSVPs and minutes go with it.`
+                    + `${m.has_calendar_event
+                        ? ' The calendar event is cancelled and attendees are told.' : ''}`
+                    + ' This cannot be undone.',
+                confirmLabel: 'Delete it',
+                danger: true,
+            });
+            if (!yes) return;
+            await api(`admin/meeting?id=${encodeURIComponent(m.id)}`, { method: 'DELETE' });
+            say('Meeting deleted.');
+            await loadMeetings();
+        }
+    } catch (err) { showError(err); }
 });
 $('#mCancel').addEventListener('click', () => {
     $('#meetingForm').reset(); $('#mId').value = '';
@@ -224,6 +265,98 @@ $('#parishForm').addEventListener('submit', async (e) => {
     } catch (err) { showError(err); }
 });
 
+/* --- google ------------------------------------------------------------- */
+
+const GOOGLE_ADMIN_MESSAGES = {
+    connected: null, // handled as a success announcement, not an error
+    denied: 'Google connection was cancelled. Nothing changed.',
+    norefresh: 'Google did not return a refresh token, so nothing was stored. '
+        + 'Try connecting again.',
+    error: 'Connecting Google did not complete. Try again.',
+};
+
+async function loadGoogle() {
+    $('#gLoading').hidden = false;
+    $('#gOff').hidden = true; $('#gConnect').hidden = true; $('#gOn').hidden = true;
+    try {
+        google = await api('google/status');
+    } catch (err) {
+        google = null;
+        $('#gLoading').hidden = true;
+        if (err.status === 503) { $('#gOff').hidden = false; return; }
+        showError(err);
+        return;
+    }
+    $('#gLoading').hidden = true;
+    if (google.connected) {
+        $('#gOn').hidden = false;
+        $('#gEmail').textContent = google.connected_email;
+        $('#gGroupEmail').value = google.group_email || '';
+        $('#gGroupSync').disabled = !google.groups_scope;
+        $('#gReport').textContent = google.groups_scope ? ''
+            : 'This connection was made without the group scope, so group sync is off. '
+            + 'Calendar invites and Meet still work.';
+    } else {
+        $('#gConnect').hidden = false;
+    }
+    // The invite toggle on the meeting form only makes sense with a connection.
+    $('#mInvitesField').hidden = !google.connected;
+}
+
+function reportGoogleResult() {
+    const code = new URLSearchParams(location.search).get('google');
+    if (!code) return;
+    history.replaceState(null, '', location.pathname);
+    if (code === 'connected') say('Google connected.');
+    else if (GOOGLE_ADMIN_MESSAGES[code]) showError(new Error(GOOGLE_ADMIN_MESSAGES[code]));
+}
+
+$('#gGroups').addEventListener('change', () => {
+    $('#gConnectLink').href = `/api/google/connect${$('#gGroups').checked ? '?groups=1' : ''}`;
+});
+
+$('#gGroupSave').addEventListener('click', async () => {
+    try {
+        clearError();
+        await api('google/group', { method: 'POST', body: { group_email: $('#gGroupEmail').value } });
+        say('Group email saved.');
+    } catch (err) { showError(err); }
+});
+
+$('#gGroupSync').addEventListener('click', async () => {
+    try {
+        clearError();
+        $('#gReport').textContent = 'Syncing.';
+        const r = await api('google/group/sync', { method: 'POST' });
+        const parts = [`Added ${r.added}, removed ${r.removed}.`];
+        if (r.kept_owner) parts.push('Kept the connected account in the group.');
+        if (r.skipped_no_email) parts.push(`Skipped ${r.skipped_no_email} without an email.`);
+        for (const f of r.failures || []) parts.push(`Could not ${f.op} ${f.email}: ${f.error}`);
+        $('#gReport').textContent = parts.join(' ');
+        say('Group sync finished.');
+    } catch (err) {
+        $('#gReport').textContent = '';
+        showError(err);
+    }
+});
+
+$('#gDisconnect').addEventListener('click', async () => {
+    const yes = await confirmAction({
+        title: 'Disconnect Google?',
+        message: 'Calendar invites and group sync stop until someone connects again. '
+            + 'Meetings and RSVPs already in Ostiary are untouched.',
+        confirmLabel: 'Disconnect',
+        danger: true,
+    });
+    if (!yes) return;
+    try {
+        clearError();
+        await api('google/disconnect', { method: 'POST' });
+        say('Google disconnected.');
+        await loadGoogle();
+    } catch (err) { showError(err); }
+});
+
 /* --- boot --------------------------------------------------------------- */
 
 const me = await requireSession();
@@ -233,8 +366,9 @@ if (me) {
     } else {
         $('#tools').hidden = false;
         $('#pNotes').value = me.parish.policy_notes || '';
+        reportGoogleResult();
         try {
-            await Promise.all([loadTeam(), loadSlots(), loadMeetings()]);
+            await Promise.all([loadTeam(), loadSlots(), loadMeetings(), loadGoogle()]);
         } catch (err) { showError(err); }
     }
 }

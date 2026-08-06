@@ -114,6 +114,55 @@ export async function verifySession(
     }
 }
 
+// ---------------------------------------------------------------------------
+// Signed state tokens
+// Same construction as the session cookie (b64url payload dot b64url HMAC),
+// same key, but short-lived and carried in a URL rather than a cookie. Used
+// for the OAuth `state` parameter, where the round trip through Google must
+// come back bearing something only this server could have signed.
+// ---------------------------------------------------------------------------
+
+export async function signState(
+    env: { SESSION_SECRET?: string },
+    payload: Record<string, unknown>,
+    ttlSeconds: number,
+): Promise<string> {
+    const withExp = { ...payload, exp: Math.floor(Date.now() / 1000) + ttlSeconds };
+    const body = b64urlEncode(enc.encode(JSON.stringify(withExp)));
+    const key = await hmacKey(requireSecret(env));
+    const sig = new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode(body)));
+    return `${body}.${b64urlEncode(sig)}`;
+}
+
+export async function verifyState<T extends Record<string, unknown>>(
+    env: { SESSION_SECRET?: string },
+    token: string | null,
+): Promise<(T & { exp: number }) | null> {
+    if (!token) return null;
+    const dot = token.lastIndexOf('.');
+    if (dot <= 0) return null;
+
+    const body = token.slice(0, dot);
+    const key = await hmacKey(requireSecret(env));
+    const expected = new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode(body)));
+
+    let given: Uint8Array;
+    try {
+        given = b64urlDecode(token.slice(dot + 1));
+    } catch {
+        return null;
+    }
+    if (!timingSafeEqual(expected, given)) return null;
+
+    try {
+        const parsed = JSON.parse(new TextDecoder().decode(b64urlDecode(body))) as T & { exp: number };
+        if (!parsed.exp || parsed.exp < Math.floor(Date.now() / 1000)) return null;
+        return parsed;
+    } catch {
+        return null;
+    }
+}
+
 export function readCookie(request: Request, name: string): string | null {
     const header = request.headers.get('Cookie');
     if (!header) return null;

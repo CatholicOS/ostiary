@@ -82,24 +82,24 @@ export async function getFormationStatus(ctx: Ctx): Promise<Response> {
     const guard = requireAdmin(ctx); if (guard) return guard;
 
     const { results } = await ctx.env.DB.prepare(
-        `SELECT u.id, u.name, u.role, p.module_slug, p.completed_at, p.score, p.score_max
+        `SELECT u.id, u.name, u.role, u.languages, p.module_slug, p.completed_at, p.score, p.score_max
          FROM ushers u
          LEFT JOIN formation_progress p ON p.usher_id = u.id
          WHERE u.parish_id = ?1 AND u.active = 1
          ORDER BY u.name`,
     ).bind(ctx.session!.p).all<{
-        id: string; name: string; role: string;
+        id: string; name: string; role: string; languages: string;
         module_slug: string | null; completed_at: number | null;
         score: number | null; score_max: number | null;
     }>();
 
     const byUsher = new Map<string, {
-        id: string; name: string; role: string;
+        id: string; name: string; role: string; languages: string;
         completed: Record<string, { at: number; score: number | null; score_max: number | null }>;
     }>();
 
     for (const row of results ?? []) {
-        const entry = byUsher.get(row.id) ?? { id: row.id, name: row.name, role: row.role, completed: {} };
+        const entry = byUsher.get(row.id) ?? { id: row.id, name: row.name, role: row.role, languages: row.languages, completed: {} };
         if (row.module_slug && row.completed_at) {
             entry.completed[row.module_slug] = {
                 at: row.completed_at, score: row.score, score_max: row.score_max,

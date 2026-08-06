@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Roster: Ostiary</title>
-<meta name="theme-color" content="#7a2231">
+<meta name="theme-color" content="#7a2231" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17120f" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="/site.webmanifest">
 <link rel="stylesheet" href="/assets/css/app.css">
@@ -35,13 +36,13 @@
   <p id="error" class="banner" role="alert" hidden></p>
 
   <h1>Roster</h1>
-  <p class="muted" id="identity"></p>
+  <p class="kicker" id="identity"></p>
 
   <div class="row" role="group" aria-label="Filter the roster">
     <button type="button" id="filterAll" aria-pressed="true">All Masses</button>
     <button type="button" id="filterMine" aria-pressed="false">Only mine</button>
     <button type="button" id="filterShort" aria-pressed="false">Short-handed</button>
-    <button type="button" id="printBtn" class="no-print">Print this roster</button>
+    <button type="button" id="printBtn" class="quiet no-print push">Print this roster</button>
   </div>
 
   <div id="unconfirmedBanner"></div>

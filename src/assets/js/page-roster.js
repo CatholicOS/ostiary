@@ -98,7 +98,7 @@ function render() {
 
     const box = $('#slots');
     if (!list.length) {
-        box.innerHTML = `<div class="card"><p class="muted">
+        box.innerHTML = `<div class="card empty"><p class="muted">
             ${filter === 'all' ? 'No Masses scheduled in the next six weeks.'
                                : 'Nothing matches that filter.'}</p></div>`;
         return;

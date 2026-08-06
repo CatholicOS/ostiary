@@ -287,6 +287,47 @@ console.log('\nadmin');
 
     const seen = await call('formation', { jar: usher });
     check('policy notes reach the ushers', seen.data?.policy_notes?.includes('AED'));
+
+    const mtg = await call('admin/meeting', {
+        method: 'POST',
+        body: { title: 'Smoke Test Meeting', starts_at: when + 7200 },
+        jar: admin,
+    });
+    check('coordinator can add a meeting', mtg.status === 200 && mtg.data?.id);
+
+    const delMtg = await call(`admin/meeting?id=${encodeURIComponent(mtg.data.id)}`, {
+        method: 'DELETE', jar: admin,
+    });
+    check('coordinator can delete a meeting', delMtg.status === 200 && delMtg.data?.deleted);
+
+    // --- google (expected local answer: not configured) ---------------------
+    const gs = await call('google/status');
+    check('google status answers (503 is the expected local answer)',
+        gs.status === 200 || gs.status === 503, `status ${gs.status}`);
+    if (gs.status === 503) {
+        check('the 503 says Google is not configured, in words',
+            /not configured/i.test(gs.data?.error ?? ''), `got: ${gs.data?.error}`);
+    } else {
+        check('configured status is honest json', gs.data?.configured === true);
+    }
+
+    // send_invites with no Google must say the meeting saved AND the calendar
+    // step failed, never a bare success and never a lost meeting.
+    const withInvites = await call('admin/meeting', {
+        method: 'POST',
+        body: { title: 'Smoke Test Invite Meeting', starts_at: when + 10800, send_invites: true },
+        jar: admin,
+    });
+    check('send_invites without Google fails honestly but saves the meeting',
+        withInvites.status >= 400 && withInvites.data?.saved === true
+            && /Meeting saved, but/.test(withInvites.data?.error ?? ''),
+        `status ${withInvites.status} :: ${withInvites.data?.error}`);
+    if (withInvites.data?.id) {
+        const cleanup = await call(`admin/meeting?id=${encodeURIComponent(withInvites.data.id)}`, {
+            method: 'DELETE', jar: admin,
+        });
+        check('the honestly-failed meeting still deletes', cleanup.status === 200);
+    }
 }
 
 // --- session teardown ------------------------------------------------------

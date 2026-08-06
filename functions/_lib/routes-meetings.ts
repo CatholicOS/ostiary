@@ -6,6 +6,7 @@ import type { Ctx } from './http';
 interface MeetingRow {
     id: string; starts_at: number; title: string; location: string | null;
     agenda_md: string | null; minutes_md: string | null;
+    gcal_event_id: string | null; meet_link: string | null;
 }
 
 /** GET /api/meetings?past=1
@@ -19,9 +20,11 @@ export async function getMeetings(ctx: Ctx): Promise<Response> {
 
     const { results: meetings } = await ctx.env.DB.prepare(
         past
-            ? `SELECT id, starts_at, title, location, agenda_md, minutes_md FROM meetings
+            ? `SELECT id, starts_at, title, location, agenda_md, minutes_md,
+                      gcal_event_id, meet_link FROM meetings
                WHERE parish_id = ?1 AND starts_at < ?2 ORDER BY starts_at DESC LIMIT 25`
-            : `SELECT id, starts_at, title, location, agenda_md, minutes_md FROM meetings
+            : `SELECT id, starts_at, title, location, agenda_md, minutes_md,
+                      gcal_event_id, meet_link FROM meetings
                WHERE parish_id = ?1 AND starts_at >= ?2 ORDER BY starts_at LIMIT 25`,
     ).bind(ctx.session!.p, now).all<MeetingRow>();
 
@@ -48,8 +51,12 @@ export async function getMeetings(ctx: Ctx): Promise<Response> {
         past,
         meetings: meetings.map((m) => {
             const list = byMeeting.get(m.id) ?? [];
+            // The event id itself stays server-side; the client only needs to
+            // know whether an event exists and where the Meet link points.
+            const { gcal_event_id, ...rest } = m;
             return {
-                ...m,
+                ...rest,
+                has_calendar_event: !!gcal_event_id,
                 rsvps: (list ?? []).map((r) => ({
                     usher_id: r.usher_id, name: r.name,
                     status: r.status, attended: r.attended === 1,

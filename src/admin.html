@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Coordinator tools: Ostiary</title>
-<meta name="theme-color" content="#7a2231">
+<meta name="theme-color" content="#7a2231" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17120f" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="/site.webmanifest">
 <link rel="stylesheet" href="/assets/css/app.css">
@@ -35,7 +36,7 @@
   <p id="error" class="banner" role="alert" hidden></p>
 
   <h1>Coordinator tools</h1>
-  <p class="muted" id="identity"></p>
+  <p class="kicker" id="identity"></p>
 
   <p id="denied" class="banner" hidden>
     <strong>Coordinator passphrase required.</strong>
@@ -149,6 +150,14 @@
           <label for="mMinutes">Minutes <span class="hint">written after the meeting</span></label>
           <textarea id="mMinutes"></textarea>
         </div>
+        <div class="field" id="mInvitesField" hidden>
+          <label class="check" for="mInvites">
+            <input type="checkbox" id="mInvites">
+            Send calendar invites through Google
+          </label>
+          <p class="hint">Every active usher with an email gets the invite, and the
+             event carries a Google Meet link.</p>
+        </div>
         <input type="hidden" id="mId">
         <div class="row">
           <button class="primary" type="submit" id="mSubmit">Schedule it</button>
@@ -178,6 +187,49 @@ Diocesan safe environment program name and reporting number."></textarea>
         </div>
         <button class="primary" type="submit">Save</button>
       </form>
+    </div>
+
+    <h2>Google</h2>
+    <p class="small muted">Optional. Connecting a Google account lets meeting invites go
+       out on that account's calendar with a Meet link. Group sync additionally needs
+       Google Workspace; a plain gmail.com account gets calendar and Meet only.</p>
+    <div class="card">
+      <p class="muted" id="gLoading">Checking.</p>
+
+      <div id="gOff" hidden>
+        <p class="muted">Google is not configured on this server, so nothing here is
+           available. The setup runbook is docs/GOOGLE.md in the repository.</p>
+      </div>
+
+      <div id="gConnect" hidden>
+        <p class="g-state"><span class="pill plain">Not connected</span></p>
+        <div class="field">
+          <label class="check" for="gGroups">
+            <input type="checkbox" id="gGroups">
+            Also request Google Group sync <span class="hint">Workspace only</span>
+          </label>
+        </div>
+        <a class="btn" id="gConnectLink" href="/api/google/connect">Connect Google</a>
+      </div>
+
+      <div id="gOn" hidden>
+        <p class="g-state"><span class="pill ok">Connected</span>
+           as <strong id="gEmail"></strong></p>
+        <div class="field">
+          <label for="gGroupEmail">Google Group email <span class="hint">optional, Workspace only</span></label>
+          <input id="gGroupEmail" type="email" placeholder="ushers@yourparish.org"
+                 aria-describedby="gGroupHint">
+          <p class="hint" id="gGroupHint">Sync reconciles the group to the active roster:
+             it adds ushers with an email and removes people no longer on the roster,
+             never the connected account. Needs a group this account can manage.</p>
+        </div>
+        <div class="row">
+          <button type="button" id="gGroupSave">Save group email</button>
+          <button type="button" id="gGroupSync">Sync group now</button>
+          <button type="button" class="quiet" id="gDisconnect">Disconnect</button>
+        </div>
+        <p class="small muted report" id="gReport" role="status"></p>
+      </div>
     </div>
 
   </div>

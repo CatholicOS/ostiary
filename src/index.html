@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ostiary: usher formation and rosters</title>
 <meta name="description" content="Formation and Mass rosters for parish ushers, the ministers of hospitality.">
-<meta name="theme-color" content="#7a2231">
+<meta name="theme-color" content="#7a2231" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17120f" media="(prefers-color-scheme: dark)">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="manifest" href="/site.webmanifest">
 <link rel="stylesheet" href="/assets/css/app.css">
@@ -37,11 +38,17 @@
 
   <!-- ===================== signed out ===================== -->
   <section id="signin" hidden>
+    <svg class="signin-mark" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
+      <path d="M19 51 V31 a13 13 0 0 1 26 0 V51" fill="none"
+            stroke="currentColor" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="32" cy="34.5" r="4.5" fill="currentColor"/>
+      <path d="M32 38 L28.2 47 h7.6 Z" fill="currentColor"/>
+    </svg>
     <h1>Sign in</h1>
     <p class="muted">Your coordinator gives you the parish code. There is no password
       for ushers: you pick your name off the roster.</p>
 
-    <div class="card" style="max-width: 30rem;">
+    <div class="card narrow">
       <form id="codeForm">
         <div class="field">
           <label for="code">Parish code</label>
@@ -50,11 +57,21 @@
                  aria-describedby="codeHint">
           <p class="hint" id="codeHint">For example, CLEMENT.</p>
         </div>
-        <button class="primary" type="submit">Continue</button>
+        <button class="primary wide" type="submit">Continue</button>
       </form>
+
+      <!-- Shown only when the server says Google is configured. This is a
+           plain styled button: the official Google branding assets are not
+           available offline, so the branding guidelines should be applied
+           when those assets are added. -->
+      <div id="googleSignin" hidden>
+        <div class="divider">or</div>
+        <a class="btn wide" href="/api/google/signin">Sign in with Google</a>
+        <p class="hint">Works once your coordinator has put your email on the roster.</p>
+      </div>
     </div>
 
-    <div class="card" id="whoCard" hidden style="max-width: 30rem;">
+    <div class="card narrow" id="whoCard" hidden>
       <h2 id="parishName">Parish</h2>
 
       <form id="usherForm">
@@ -63,10 +80,10 @@
           <select id="usher" name="usher" required></select>
           <p class="hint">Not listed? Ask your coordinator to add you.</p>
         </div>
-        <button class="primary" type="submit">Sign in</button>
+        <button class="primary wide" type="submit">Sign in</button>
       </form>
 
-      <hr style="border:0;border-top:1px solid var(--line);margin:1.4rem 0;">
+      <div class="divider">Coordinators</div>
 
       <form id="adminForm">
         <div class="field">
@@ -75,7 +92,7 @@
                  autocomplete="current-password">
           <p class="hint">Only coordinators need this. It unlocks the admin screen.</p>
         </div>
-        <button type="submit">Sign in as coordinator</button>
+        <button class="wide" type="submit">Sign in as coordinator</button>
       </form>
     </div>
   </section>
@@ -83,7 +100,7 @@
   <!-- ===================== signed in ====================== -->
   <section id="dash" hidden>
     <h1>Good to see you</h1>
-    <p class="muted" id="identity"></p>
+    <p class="kicker" id="identity"></p>
 
     <div class="grid two">
       <div class="card">

@@ -6,6 +6,10 @@ import type { Session } from './auth';
 export interface Env {
     DB: D1Database;
     SESSION_SECRET?: string;
+    // Optional. When unset, every /api/google/* route answers 503 and the rest
+    // of the app behaves exactly as it did before the Google layer existed.
+    GOOGLE_CLIENT_ID?: string;
+    GOOGLE_CLIENT_SECRET?: string;
 }
 
 export interface Ctx {

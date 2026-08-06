@@ -93,6 +93,17 @@ acceptable for anything sacramental, financial, or safe-environment related,
 and the app must never be extended to hold those without a real identity
 provider first.
 
+**Google sign-in (optional, see docs/GOOGLE.md) is now that stronger identity,
+with limits worth stating.** When a parish configures it, an usher whose email
+is on the roster can sign in through Google OIDC instead of picking their name,
+which upgrades "I know the join code" to "I control that mailbox" for that
+person. What it does not change: the join-code flow still exists as the
+fallback, so the floor of the threat model is unchanged until that flow is
+retired per parish (not built); nobody is auto-created from Google sign-in;
+and coordinator authority is still the passphrase, never the Google account.
+So the rule above stands. Sacramental, financial, and safe-environment records
+stay out until the join-code fallback can actually be turned off.
+
 Consequence for content: the formation module on the collection describes
 *procedure*, never account numbers, safe locations, or alarm codes.
 

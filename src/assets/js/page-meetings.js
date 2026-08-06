@@ -49,6 +49,8 @@ function meetingMarkup(m) {
           <h2 style="margin-top:0;">${esc(m.title)}</h2>
           <p class="when muted">${esc(fmtDateTime(m.starts_at))}${rel ? ` (${rel})` : ''}
              ${m.location ? ` at ${esc(m.location)}` : ''}</p>
+          ${m.meet_link && !showPast
+            ? `<p><a class="meet" href="${esc(m.meet_link)}" rel="noopener">Join on Google Meet</a></p>` : ''}
         </div>
         <span class="pill plain">${m.counts.yes} coming</span>
       </div>
@@ -75,7 +77,7 @@ async function load() {
         const box = $('#meetings');
         box.innerHTML = meetings.length
             ? meetings.map(meetingMarkup).join('')
-            : `<div class="card"><p class="muted">${showPast
+            : `<div class="card empty"><p class="muted">${showPast
                 ? 'No past meetings on record.' : 'Nothing scheduled yet.'}</p></div>`;
     } catch (err) { showError(err); }
 }

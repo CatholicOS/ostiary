@@ -13,6 +13,33 @@ const dashEl = $('#dash');
 
 let parishCode = null;
 
+/* Google sign-in: the button appears only when the server says Google is
+   configured, so a parish that never set it up never sees a dead control.
+   The callback reports failures as a short code in the query string. */
+const GOOGLE_MESSAGES = {
+    'no-match': 'That Google account is not on a roster yet. Ask your coordinator '
+        + 'to add your email, then try again. The parish code still works below.',
+    'many-match': 'That email appears more than once across rosters, so Google '
+        + 'sign-in cannot tell who you are. Sign in with the parish code instead.',
+    denied: 'Google sign-in was cancelled. The parish code still works.',
+    error: 'Google sign-in did not complete. Try again, or use the parish code.',
+};
+
+async function showGoogleSignin() {
+    try {
+        await api('google/status');
+        $('#googleSignin').hidden = false;
+    } catch { /* 503: not configured. The button stays hidden, honestly. */ }
+}
+
+function reportGoogleResult() {
+    const params = new URLSearchParams(location.search);
+    const code = params.get('google');
+    if (!code) return;
+    history.replaceState(null, '', location.pathname);
+    if (GOOGLE_MESSAGES[code]) showError(new Error(GOOGLE_MESSAGES[code]));
+}
+
 $('#codeForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     clearError();
@@ -136,4 +163,6 @@ try {
         signinEl.hidden = false;
         showError(err);
     }
+    reportGoogleResult();
+    showGoogleSignin();
 }

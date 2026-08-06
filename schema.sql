@@ -48,6 +48,9 @@ CREATE TABLE IF NOT EXISTS ushers (
   languages         TEXT NOT NULL DEFAULT 'en',
   active            INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)),
   notes             TEXT,
+  -- Google account id (the OIDC `sub` claim), recorded on first Google
+  -- sign-in. The matched credential is the email; this is a record, not a key.
+  google_sub        TEXT,
   created_at        INTEGER NOT NULL,
   updated_at        INTEGER NOT NULL,
   FOREIGN KEY (parish_id) REFERENCES parishes(id) ON DELETE CASCADE
@@ -116,11 +119,36 @@ CREATE TABLE IF NOT EXISTS meetings (
   location          TEXT,
   agenda_md         TEXT,
   minutes_md        TEXT,
+  -- Set when the coordinator chose "send calendar invites" and the event was
+  -- actually created on Google Calendar. NULL means no event, honestly.
+  gcal_event_id     TEXT,
+  meet_link         TEXT,
   created_at        INTEGER NOT NULL,
   updated_at        INTEGER NOT NULL,
   FOREIGN KEY (parish_id) REFERENCES parishes(id) ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS idx_meetings_parish_time ON meetings(parish_id, starts_at);
+
+-- ---------------------------------------------------------------------------
+-- Google (optional, per parish)
+-- One row per parish that connected a Google account from the admin screen.
+-- The refresh token is encrypted at rest with AES-GCM under a key derived
+-- from SESSION_SECRET (HKDF, info "ostiary-google-token"). Rotating
+-- SESSION_SECRET therefore invalidates every stored token; the remedy is the
+-- coordinator pressing Connect again, not a data migration.
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS google_connections (
+  parish_id                 TEXT PRIMARY KEY,
+  connected_email           TEXT NOT NULL,
+  refresh_token_ciphertext  TEXT NOT NULL,     -- base64
+  refresh_token_iv          TEXT NOT NULL,     -- 12 random bytes, base64
+  scopes                    TEXT NOT NULL,     -- space-separated, as granted
+  calendar_id               TEXT NOT NULL DEFAULT 'primary',
+  group_email               TEXT,              -- Workspace group to reconcile, or NULL
+  created_at                INTEGER NOT NULL,
+  updated_at                INTEGER NOT NULL,
+  FOREIGN KEY (parish_id) REFERENCES parishes(id) ON DELETE CASCADE
+);
 
 CREATE TABLE IF NOT EXISTS meeting_rsvps (
   id                TEXT PRIMARY KEY,

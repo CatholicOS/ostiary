@@ -4,6 +4,8 @@
 import { hashPassphrase } from './auth';
 import { clean, fail, newId, nowSeconds, ok, readJson, requireAdmin } from './http';
 import type { Ctx } from './http';
+import { GoogleApiError } from './google-api';
+import { cancelMeetingEvent, pushMeetingToCalendar } from './google-sync';
 
 const ROLES = ['usher', 'captain', 'coordinator'];
 
@@ -114,7 +116,28 @@ export async function deleteSlot(ctx: Ctx): Promise<Response> {
     return ok({ id, deleted: true });
 }
 
-/** POST /api/admin/meeting { id?, starts_at, title, location?, agenda_md?, minutes_md? } */
+/** The meeting row saved; the calendar step after it did not. The error says
+ *  both, because "it failed" would hide the save and "ok" would hide the
+ *  failure. */
+async function calendarStep(ctx: Ctx, meetingId: string): Promise<Response> {
+    try {
+        const cal = await pushMeetingToCalendar(ctx, meetingId);
+        return ok({ id: meetingId, meet_link: cal.meet_link, invited: cal.invited });
+    } catch (err) {
+        if (err instanceof GoogleApiError) {
+            const status = [400, 409, 503].includes(err.status) ? err.status : 502;
+            return fail(status, `Meeting saved, but Google Calendar failed: ${err.message}`,
+                { id: meetingId, saved: true });
+        }
+        throw err;
+    }
+}
+
+/** POST /api/admin/meeting
+ *  { id?, starts_at, title, location?, agenda_md?, minutes_md?, send_invites? }
+ *  send_invites: true additionally creates or updates a Google Calendar event
+ *  with a Meet link and invites every active usher who has an email. Optional,
+ *  and only meaningful once the parish has connected Google. */
 export async function postMeeting(ctx: Ctx): Promise<Response> {
     const guard = requireAdmin(ctx); if (guard) return guard;
 
@@ -144,6 +167,7 @@ export async function postMeeting(ctx: Ctx): Promise<Response> {
              WHERE id = ?1 AND parish_id = ?2`,
         ).bind(id, ctx.session!.p, startsAt, title, location, agenda, minutes, now).run();
         if (!res.meta.changes) return fail(404, 'No such meeting at your parish.');
+        if (body.send_invites === true) return calendarStep(ctx, id);
         return ok({ id });
     }
 
@@ -153,7 +177,41 @@ export async function postMeeting(ctx: Ctx): Promise<Response> {
          VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?8)`,
     ).bind(meetingId, ctx.session!.p, startsAt, title, location, agenda, minutes, now).run();
 
+    if (body.send_invites === true) return calendarStep(ctx, meetingId);
     return ok({ id: meetingId });
+}
+
+/** DELETE /api/admin/meeting?id=...
+ *  A meeting with a calendar event cancels the event first (attendees get the
+ *  cancellation email). If Google refuses, the meeting is kept so the two
+ *  systems never silently disagree about whether it exists. */
+export async function deleteMeeting(ctx: Ctx): Promise<Response> {
+    const guard = requireAdmin(ctx); if (guard) return guard;
+
+    const id = clean(ctx.url.searchParams.get('id'), 80);
+    if (!id) return fail(400, 'id required.');
+
+    const meeting = await ctx.env.DB.prepare(
+        `SELECT id, gcal_event_id FROM meetings WHERE id = ?1 AND parish_id = ?2`,
+    ).bind(id, ctx.session!.p).first<{ id: string; gcal_event_id: string | null }>();
+    if (!meeting) return fail(404, 'No such meeting at your parish.');
+
+    if (meeting.gcal_event_id) {
+        try {
+            await cancelMeetingEvent(ctx, meeting.gcal_event_id);
+        } catch (err) {
+            if (err instanceof GoogleApiError) {
+                return fail(502,
+                    `The meeting was kept, because cancelling its calendar event failed: ${err.message}`);
+            }
+            throw err;
+        }
+    }
+
+    await ctx.env.DB.prepare(
+        `DELETE FROM meetings WHERE id = ?1 AND parish_id = ?2`,
+    ).bind(id, ctx.session!.p).run();
+    return ok({ id, deleted: true });
 }
 
 /** POST /api/admin/attendance { meeting_id, present: string[] }

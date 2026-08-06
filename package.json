@@ -5,14 +5,14 @@
   "description": "Usher formation and meeting organization for Catholic parishes",
   "type": "module",
   "scripts": {
-    "dev": "wrangler pages dev src --port 8788 --d1 DB=ostiary-db --persist-to .wrangler/state",
+    "dev": "wrangler pages dev src --port 8788 --persist-to .wrangler/state --binding SESSION_SECRET=local-dev-secret-at-least-32-bytes-long",
     "db:init:local": "wrangler d1 execute ostiary-db --local --file=./schema.sql --persist-to .wrangler/state",
     "db:init": "wrangler d1 execute ostiary-db --remote --file=./schema.sql",
     "seed:build": "node scripts/seed.mjs > .seed.sql",
     "seed:local": "npm run seed:build && wrangler d1 execute ostiary-db --local --file=./.seed.sql --persist-to .wrangler/state",
     "seed:remote": "npm run seed:build && wrangler d1 execute ostiary-db --remote --file=./.seed.sql",
     "setup:local": "npm run db:init:local && npm run seed:local",
-    "test": "node tests/smoke.mjs",
+    "test": "node tests/google.test.mjs && node tests/smoke.mjs",
     "deploy": "wrangler pages deploy src --project-name=ostiary --branch=main"
   },
   "devDependencies": {
