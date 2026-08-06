@@ -27,6 +27,7 @@
 
     --radius: 10px;
     --shadow: 0 1px 2px rgba(34, 26, 22, .08), 0 4px 12px rgba(34, 26, 22, .05);
+    --scroll-hint: rgba(34, 26, 22, .25);
     --tap: 44px;
     --measure: 68ch;
 }
@@ -54,6 +55,7 @@
         --bad-dim:    #351a12;
 
         --shadow: 0 1px 2px rgba(0, 0, 0, .5);
+        --scroll-hint: rgba(242, 233, 226, .16);
     }
 }
 
@@ -105,6 +107,10 @@ a:hover { text-decoration-thickness: 2px; }
     outline-offset: 2px;
     border-radius: 3px;
 }
+/* Script-focused headings (tabindex="-1") are not interactive: no ring. */
+h1[tabindex]:focus-visible, h2[tabindex]:focus-visible { outline: none; }
+/* Sticky masthead: without this, scrolled-to targets land hidden under it. */
+#main, h1[tabindex], h2[tabindex] { scroll-margin-top: 4.5rem; }
 
 .skip {
     position: absolute; left: -9999px; top: 0;
@@ -134,15 +140,18 @@ main.wrap { padding-top: 1.5rem; }
 }
 .brand span { color: var(--accent); }
 .brand small {
-    display: block; font-weight: 400; font-size: .68rem;
-    color: var(--ink-faint); letter-spacing: .07em; text-transform: uppercase;
+    display: block; font-weight: 400; font-size: .78rem;
+    color: var(--ink-faint); letter-spacing: .06em; text-transform: uppercase;
 }
 
 nav.main { margin-left: auto; display: flex; gap: .25rem; flex-wrap: wrap; }
-/* When the nav wraps under the brand on a phone, hang it off the left edge so
-   the link text lines up with the wordmark instead of drifting right. */
+/* Phones: the nav wraps under the brand, hung off the left edge to line up
+   with the wordmark, tightened so all four links fit one row at 360px. */
 @media (max-width: 43rem) {
-    nav.main { margin-left: -.8rem; width: 100%; }
+    .masthead .wrap { padding-block: .5rem .3rem; }
+    nav.main { margin-left: -.45rem; width: 100%; gap: 0; }
+    nav.main a { padding: 0 .45rem; font-size: .9rem; }
+    #main, h1[tabindex], h2[tabindex] { scroll-margin-top: 7.5rem; }
 }
 nav.main a {
     display: inline-flex; align-items: center; min-height: var(--tap);
@@ -323,8 +332,19 @@ th { font-family: ui-sans-serif, system-ui, sans-serif; font-size: .78rem;
    initial one, so a span sitting at x=429 inside the horizontally scrolled
    table still widened the DOCUMENT to 429px on a 390px phone: a visually
    hidden element caused a real horizontal scrollbar. Making the scroll
-   container the containing block confines them to it. */
-.scroll-x { overflow-x: auto; position: relative; }
+   container the containing block confines them to it.
+   The backgrounds spare a phone the mystery cut-off: a right-edge shadow
+   only while columns are hidden; the pinned Name column keeps the person. */
+.scroll-x {
+    overflow-x: auto; position: relative;
+    background:
+        linear-gradient(270deg, var(--paper) 40%, transparent) right / 36px 100% no-repeat local,
+        radial-gradient(farthest-side at 100% 50%, var(--scroll-hint), transparent) right / 12px 100% no-repeat scroll;
+}
+.scroll-x th:first-child, .scroll-x td:first-child {
+    position: sticky; left: 0; z-index: 1;
+    background: var(--paper); box-shadow: inset -1px 0 0 var(--line);
+}
 
 footer.site {
     border-top: 1px solid var(--line); margin-top: 3rem;
@@ -429,6 +449,29 @@ label.opt {
     min-height: var(--tap); padding-block: .3rem; margin-bottom: 0; cursor: pointer;
 }
 label.opt input { flex: none; margin-top: .2rem; }
+
+/* --- formation citations -------------------------------------------------
+   Reference rows under a module section. A linked citation is one whole-row
+   link (comfortable to tap); an unlinked citation is the same row without a
+   link, distinguished by a quiet border so nothing pretends to be tappable. */
+
+ul.cites { list-style: none; margin: -.25rem 0 1.35rem; padding: 0; max-width: var(--measure); }
+ul.cites li + li { margin-top: .4rem; }
+.cite {
+    display: flex; flex-direction: column; gap: .05rem; justify-content: center;
+    min-height: var(--tap); padding: .5rem .85rem;
+    border-left: 3px solid var(--line-firm);
+    background: var(--card); border-radius: 0 var(--radius) var(--radius) 0;
+    color: var(--ink); text-decoration: none;
+}
+.cite-src {
+    font: 600 .85rem/1.45 ui-sans-serif, system-ui, sans-serif;
+    color: var(--ink);
+}
+.cite-gloss { font-size: .88rem; line-height: 1.5; color: var(--ink-soft); }
+a.cite { border-left-color: var(--accent); }
+a.cite .cite-src { color: var(--accent); }
+a.cite:hover { background: var(--accent-dim); }
 
 /* --- print --------------------------------------------------------------
    The real workflow: a coordinator prints the Sunday roster and tapes it

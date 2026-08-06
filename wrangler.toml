@@ -41,3 +41,9 @@ database_id = "d1badac0-095e-4db1-89e9-e8830aee0086"
 # docs/GOOGLE.md. Note that Google refresh tokens are encrypted at rest under
 # a key derived from SESSION_SECRET, so rotating SESSION_SECRET invalidates
 # them; the coordinator reconnects from the admin screen and nothing is lost.
+
+[vars]
+# Platform-owner allowlist: a verified Google sign-in matching one of these
+# comma-separated emails carries coordinator authority (see routes-google.ts).
+# Fork note: change or empty this when you deploy your own instance.
+OWNER_EMAILS = "t@thomas.tc"

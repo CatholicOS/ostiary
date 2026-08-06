@@ -44,6 +44,20 @@ function renderList() {
 
 /* --- single module ------------------------------------------------------ */
 
+/* Reference rows under a section. A linked citation makes the whole row the
+   link; an unlinked one renders the same row with no link and no fake
+   affordance, because an honest unlinked citation beats a dead link. */
+function renderCites(cites) {
+    if (!cites || !cites.length) return '';
+    return `<ul class="cites">${cites.map((c) => {
+        const inner = `<span class="cite-src">${esc(c.source)}${c.ref ? `, ${esc(c.ref)}` : ''}</span>
+            <span class="cite-gloss">${esc(c.gloss)}</span>`;
+        return c.url
+            ? `<li><a class="cite" href="${esc(c.url)}" target="_blank" rel="noopener">${inner}<span class="sr-only"> (opens in a new tab)</span></a></li>`
+            : `<li><div class="cite">${inner}</div></li>`;
+    }).join('')}</ul>`;
+}
+
 function openModule(slug) {
     const m = modules.find((x) => x.slug === slug);
     if (!m) return;
@@ -64,7 +78,8 @@ function openModule(slug) {
 
     $('#modBody').innerHTML = m.sections.map((s) => `
         <h2>${esc(s.heading)}</h2>
-        ${s.body.map((p) => `<p>${esc(p)}</p>`).join('')}`).join('');
+        ${s.body.map((p) => `<p>${esc(p)}</p>`).join('')}
+        ${renderCites(s.citations)}`).join('');
 
     $('#questions').innerHTML = m.check.map((c, i) => `
         <fieldset class="q">

@@ -9,7 +9,7 @@
 
 import {
     authUrl, decodeJwtClaims, decryptToken, encryptToken, exchangeCode,
-    googleCreds, mapResponseStatus, validateIdClaims, GoogleApiError,
+    googleCreds, isOwnerEmail, mapResponseStatus, validateIdClaims, GoogleApiError,
 } from '../functions/_lib/google-api.ts';
 import { signState, verifyState } from '../functions/_lib/auth.ts';
 
@@ -44,6 +44,11 @@ console.log('google unit tests\n');
 // --- config ------------------------------------------------------------------
 console.log('config');
 {
+    check('owner: unset allowlist matches nobody', isOwnerEmail(undefined, 't@thomas.tc') === false);
+    check('owner: exact match', isOwnerEmail('t@thomas.tc', 't@thomas.tc') === true);
+    check('owner: case and whitespace tolerant', isOwnerEmail(' T@Thomas.tc , x@y.z', 't@thomas.tc') === true);
+    check('owner: non-member refused', isOwnerEmail('t@thomas.tc', 'attacker@thomas.tc') === false);
+    check('owner: empty email refused', isOwnerEmail('t@thomas.tc', '') === false);
     check('googleCreds null when unset', googleCreds({}) === null);
     check('googleCreds null when half set', googleCreds({ GOOGLE_CLIENT_ID: 'x' }) === null);
     const c = googleCreds({ GOOGLE_CLIENT_ID: 'id', GOOGLE_CLIENT_SECRET: 's' });

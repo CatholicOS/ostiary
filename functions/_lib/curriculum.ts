@@ -5,6 +5,13 @@
 // practice only: the local written policy governs, and the UI renders a
 // standing banner saying so. Nothing here cites a specific diocesan policy,
 // because no diocesan policy document was read while writing it.
+//
+// Sections that rest on a magisterial or liturgical source carry citations
+// (see curriculum-citations.ts, where every link and paragraph number is
+// verified). Citations point at universal or national documents only; they do
+// not fill the policy gaps above.
+
+import { CITATIONS, type Citation } from './curriculum-citations';
 
 export interface CheckQuestion {
     q: string;
@@ -16,6 +23,7 @@ export interface CheckQuestion {
 export interface ModuleSection {
     heading: string;
     body: string[];
+    citations?: Citation[];
 }
 
 export interface FormationModule {
@@ -43,6 +51,7 @@ export const CURRICULUM: FormationModule[] = [
                     'Until 1972 the Latin Church ordained men to the minor order of ostiarius, the porter. He held the keys, opened and shut the doors, and rang the bell. The order is gone; the work is not. You are what is left of it.',
                     'That matters because it tells you the work is liturgical, not logistical. You are not building security. You are opening a door.',
                 ],
+                citations: CITATIONS.doorkeeperOrder,
             },
             {
                 heading: 'Hospitality as ministry',
@@ -50,6 +59,7 @@ export const CURRICULUM: FormationModule[] = [
                     'Scripture is blunt about this. Romans 12:13 tells the Church to practice hospitality. Hebrews 13:2 warns that some have entertained angels without knowing it. Matthew 25:35 puts the whole thing in the mouth of Christ: I was a stranger and you welcomed me.',
                     'None of that is decoration. It means the person you cannot place, who is dressed wrong, who came in late and smells like the street, is the one the passage is about.',
                 ],
+                citations: CITATIONS.doorkeeperLaity,
             },
             {
                 heading: 'The first face',
@@ -110,6 +120,7 @@ export const CURRICULUM: FormationModule[] = [
                 body: [
                     'Ten minutes out, stop working and start greeting. Face the door. Make eye contact. Hand people what they need without being asked.',
                 ],
+                citations: CITATIONS.beforeMassGreeting,
             },
         ],
         check: [
@@ -140,6 +151,7 @@ export const CURRICULUM: FormationModule[] = [
                     'Do not walk anyone up the aisle during the proclamation of the Gospel, the homily, or the Eucharistic Prayer. Hold them at the back, quietly, and seat them at the next natural break.',
                     'Tell them why in four words: I will seat you shortly. Then actually do it. People forgive waiting. They do not forgive being forgotten at the back of a church.',
                 ],
+                citations: CITATIONS.seatingPostures,
             },
             {
                 heading: 'Families with small children',
@@ -201,6 +213,7 @@ export const CURRICULUM: FormationModule[] = [
                     'Move at the pace the assembly sets, not faster. Start at the front or the back consistently so the assembly knows what is coming.',
                     'A second collection is announced. If you did not hear it announced, ask before you take it.',
                 ],
+                citations: CITATIONS.collectionGifts,
             },
             {
                 heading: 'Custody',
@@ -250,6 +263,7 @@ export const CURRICULUM: FormationModule[] = [
                     'Release rows so the lines stay full but never crowded. Watch the ministers, not the clock. If a line is emptying, release faster; if people are stacking up in the aisle, slow down.',
                     'Use your hand, low and open. Not a beckon across the church, and not a voice.',
                 ],
+                citations: CITATIONS.communionProcession,
             },
             {
                 heading: 'People who cannot come forward',
@@ -264,6 +278,7 @@ export const CURRICULUM: FormationModule[] = [
                     'Some parishes reserve a low-gluten host in a separate pyx, and some offer the Precious Blood from a separate chalice for those who cannot receive the Host at all. These are different provisions and a person may need one, the other, or both.',
                     'Learn what your parish actually offers and where the person should go. Getting this wrong means somebody either does not receive or gets sick.',
                 ],
+                citations: CITATIONS.communionLowGluten,
             },
             {
                 heading: 'If a Host is dropped',
@@ -271,6 +286,7 @@ export const CURRICULUM: FormationModule[] = [
                     'Stay where it is. Do not let anyone step there. Signal the nearest priest, deacon, or extraordinary minister and let them handle it.',
                     'Do not pick it up yourself unless your parish has trained you to, and do not make a scene. Stand, guard the spot, get a minister.',
                 ],
+                citations: CITATIONS.communionFallenHost,
             },
         ],
         check: [
@@ -373,6 +389,7 @@ export const CURRICULUM: FormationModule[] = [
                     'Somebody who is intoxicated, or unwell, or unhoused, is not automatically a problem to be removed. The question is never who they are, it is whether the behavior in this moment is preventing the assembly from praying.',
                     'If a person does need to step outside, one usher goes with them and stays with them. You do not put somebody on the sidewalk and shut the door.',
                 ],
+                citations: CITATIONS.difficultDignity,
             },
             {
                 heading: 'Photography, solicitation, and custody',
@@ -426,6 +443,7 @@ export const CURRICULUM: FormationModule[] = [
                     'Every diocese in the United States runs a safe environment program with its own required training, background check, reporting chain, and renewal schedule. Yours governs. Nothing written here replaces it or counts as completing it.',
                     'If you have not completed your diocese\'s safe environment requirement, you are not finished with this module no matter what this app records.',
                 ],
+                citations: CITATIONS.safeEnvironmentCharter,
             },
             {
                 heading: 'Never alone with a minor',

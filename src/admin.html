@@ -52,15 +52,15 @@
         <div>
           <div class="field">
             <label for="uName">Name</label>
-            <input id="uName" type="text" required>
+            <input id="uName" type="text" required autocomplete="off" autocapitalize="words">
           </div>
           <div class="field">
             <label for="uEmail">Email <span class="hint">optional</span></label>
-            <input id="uEmail" type="email">
+            <input id="uEmail" type="email" autocomplete="off" autocapitalize="none" spellcheck="false">
           </div>
           <div class="field">
             <label for="uPhone">Phone <span class="hint">optional</span></label>
-            <input id="uPhone" type="tel">
+            <input id="uPhone" type="tel" autocomplete="off">
           </div>
         </div>
         <div>
@@ -74,7 +74,8 @@
           </div>
           <div class="field">
             <label for="uLangs">Languages</label>
-            <input id="uLangs" type="text" value="en" aria-describedby="uLangsHint">
+            <input id="uLangs" type="text" value="en" aria-describedby="uLangsHint"
+                   autocapitalize="none" spellcheck="false">
             <p class="hint" id="uLangsHint">Two-letter codes, comma separated. For example en,es</p>
           </div>
           <input type="hidden" id="uId">
@@ -109,11 +110,11 @@
         <div>
           <div class="field">
             <label for="sLang">Language</label>
-            <input id="sLang" type="text" value="en">
+            <input id="sLang" type="text" value="en" autocapitalize="none" spellcheck="false">
           </div>
           <div class="field">
             <label for="sNeeded">Ushers needed</label>
-            <input id="sNeeded" type="number" min="1" max="30" value="4">
+            <input id="sNeeded" type="number" min="1" max="30" value="4" inputmode="numeric">
           </div>
           <input type="hidden" id="sId">
           <div class="row">
@@ -190,19 +191,20 @@ Diocesan safe environment program name and reporting number."></textarea>
     </div>
 
     <h2>Google</h2>
-    <p class="small muted">Optional. Connecting a Google account lets meeting invites go
-       out on that account's calendar with a Meet link. Group sync additionally needs
-       Google Workspace; a plain gmail.com account gets calendar and Meet only.</p>
     <div class="card">
       <p class="muted" id="gLoading">Checking.</p>
 
       <div id="gOff" hidden>
-        <p class="muted">Google is not configured on this server, so nothing here is
+        <p class="g-state"><span class="pill plain">Not configured</span></p>
+        <p class="small muted">Google is not configured on this server, so nothing here is
            available. The setup runbook is docs/GOOGLE.md in the repository.</p>
       </div>
 
       <div id="gConnect" hidden>
         <p class="g-state"><span class="pill plain">Not connected</span></p>
+        <p class="small muted">Optional. Connecting a Google account lets meeting invites go
+           out on that account's calendar with a Meet link. Group sync additionally needs
+           Google Workspace; a plain gmail.com account gets calendar and Meet only.</p>
         <div class="field">
           <label class="check" for="gGroups">
             <input type="checkbox" id="gGroups">
@@ -218,7 +220,8 @@ Diocesan safe environment program name and reporting number."></textarea>
         <div class="field">
           <label for="gGroupEmail">Google Group email <span class="hint">optional, Workspace only</span></label>
           <input id="gGroupEmail" type="email" placeholder="ushers@yourparish.org"
-                 aria-describedby="gGroupHint">
+                 aria-describedby="gGroupHint" autocomplete="off" autocapitalize="none"
+                 spellcheck="false">
           <p class="hint" id="gGroupHint">Sync reconciles the group to the active roster:
              it adds ushers with an email and removes people no longer on the roster,
              never the connected account. Needs a group this account can manage.</p>

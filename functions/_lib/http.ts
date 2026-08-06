@@ -10,6 +10,11 @@ export interface Env {
     // of the app behaves exactly as it did before the Google layer existed.
     GOOGLE_CLIENT_ID?: string;
     GOOGLE_CLIENT_SECRET?: string;
+    // Optional comma-separated allowlist of platform-owner emails. A verified
+    // Google sign-in matching one of these carries coordinator authority for
+    // the parish it matches on the roster -- the single exception to "the
+    // passphrase is the only admin credential". Unset means no owners.
+    OWNER_EMAILS?: string;
 }
 
 export interface Ctx {

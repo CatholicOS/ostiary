@@ -13,7 +13,7 @@ import type { Ctx, Env } from './http';
 import {
     GOOGLE_REVOKE_URL, SCOPE_CALENDAR, SCOPE_GROUPS, SCOPE_SIGNIN,
     authUrl, decodeJwtClaims, decryptToken, encryptToken, exchangeCode,
-    googleCreds, refreshAccessToken, validateIdClaims,
+    googleCreds, refreshAccessToken, validateIdClaims, isOwnerEmail,
 } from './google-api';
 import type { GoogleCreds, TokenResponse } from './google-api';
 
@@ -182,7 +182,10 @@ export async function getGoogleCallback(ctx: Ctx): Promise<Response> {
 /** Sign-in completes only for an email already on a roster. Exactly one active
  *  match issues the same session cookie the join-code flow issues, with the
  *  admin flag at 0: Google proves who you are, not coordinator authority. The
- *  passphrase remains the only admin credential. Nobody is ever auto-created. */
+ *  passphrase remains the only admin credential, with one stated exception:
+ *  an email on the OWNER_EMAILS allowlist signs in with coordinator
+ *  authority, because a verified Google identity is a stronger credential
+ *  than the passphrase it replaces. Nobody is ever auto-created. */
 async function finishSignin(ctx: Ctx, email: string, sub: string): Promise<Response> {
     const { results } = await ctx.env.DB.prepare(
         `SELECT id, parish_id, role, google_sub FROM ushers
@@ -204,7 +207,8 @@ async function finishSignin(ctx: Ctx, email: string, sub: string): Promise<Respo
     }
 
     const token = await signSession(ctx.env, {
-        p: usher.parish_id, u: usher.id, r: usher.role, a: 0,
+        p: usher.parish_id, u: usher.id, r: usher.role,
+        a: isOwnerEmail(ctx.env.OWNER_EMAILS, email) ? 1 : 0,
     });
     return redirect('/', { 'Set-Cookie': sessionCookie(token, isSecure(ctx.url)) });
 }

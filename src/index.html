@@ -54,7 +54,7 @@
           <label for="code">Parish code</label>
           <input id="code" name="code" type="text" autocomplete="off"
                  autocapitalize="characters" spellcheck="false" required
-                 aria-describedby="codeHint">
+                 enterkeyhint="go" aria-describedby="codeHint">
           <p class="hint" id="codeHint">For example, CLEMENT.</p>
         </div>
         <button class="primary wide" type="submit">Continue</button>
@@ -89,7 +89,7 @@
         <div class="field">
           <label for="passphrase">Coordinator passphrase</label>
           <input id="passphrase" name="passphrase" type="password"
-                 autocomplete="current-password">
+                 autocomplete="current-password" enterkeyhint="go">
           <p class="hint">Only coordinators need this. It unlocks the admin screen.</p>
         </div>
         <button class="wide" type="submit">Sign in as coordinator</button>

@@ -96,3 +96,13 @@ pressing Disconnect and then Connect again. Nothing else is lost.
 - Google sign-in matches by email, which is the same trust level as the
   roster itself: whoever controls that mailbox is that usher. The `sub` claim
   is recorded on first sign-in but is not yet enforced as a second factor.
+
+## Platform owners
+
+`OWNER_EMAILS` in `wrangler.toml` is a comma-separated allowlist. A verified
+Google sign-in matching one of these emails receives coordinator authority
+for the parish where that email appears on the roster, without the
+passphrase. This is the single exception to "the passphrase is the only
+admin credential", and it is deliberately narrow: the owner must still exist
+as a roster row, and an unset allowlist matches nobody. If you fork this,
+change or empty the value.

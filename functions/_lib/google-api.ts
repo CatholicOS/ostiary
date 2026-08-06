@@ -33,6 +33,16 @@ export function googleCreds(env: {
 // Pure pieces
 // ---------------------------------------------------------------------------
 
+/** True when a verified email is on the comma-separated OWNER_EMAILS
+ *  allowlist. Comparison is case-insensitive and whitespace-tolerant; an
+ *  unset or empty allowlist matches nobody. */
+export function isOwnerEmail(allowlist: string | undefined, email: string): boolean {
+    if (!allowlist) return false;
+    const needle = email.trim().toLowerCase();
+    if (!needle) return false;
+    return allowlist.split(',').some((e) => e.trim().toLowerCase() === needle);
+}
+
 /** The consent-screen URL. `offline` adds access_type=offline and
  *  prompt=consent so Google returns a refresh token, which it otherwise only
  *  does on the very first consent for a client. */
